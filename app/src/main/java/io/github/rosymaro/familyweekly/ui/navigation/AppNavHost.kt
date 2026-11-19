@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -18,8 +19,19 @@ import io.github.rosymaro.familyweekly.ui.home.HomeScreen
 import io.github.rosymaro.familyweekly.ui.week.WeekScreen
 
 @Composable
-fun AppNavHost(app: FamilyWeeklyApp) {
+fun AppNavHost(app: FamilyWeeklyApp, openScheduleId: String? = null, onOpenedSchedule: () -> Unit = {}) {
     val nav = rememberNavController()
+    // 위젯을 눌러 들어오면 그 스케줄 주간 화면으로 (홈 위에 쌓아서 뒤로 가기는 홈)
+    LaunchedEffect(openScheduleId) {
+        val id = openScheduleId ?: return@LaunchedEffect
+        if (app.store.data.value.schedule(id) != null) {
+            nav.navigate(WeekRoute(id)) {
+                popUpTo<HomeRoute>()
+                launchSingleTop = true
+            }
+        }
+        onOpenedSchedule()
+    }
     NavHost(navController = nav, startDestination = HomeRoute) {
         composable<HomeRoute> {
             HomeScreen(

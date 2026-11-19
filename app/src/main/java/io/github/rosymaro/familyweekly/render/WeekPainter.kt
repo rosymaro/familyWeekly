@@ -90,6 +90,34 @@ class WeekPainter(private val res: PainterResources = PainterResources()) {
         Session(canvas, layout, rt).drawAll()
     }
 
+    /**
+     * 안내 글만 있는 그림 (위젯에 연결된 스케줄이 없을 때 등). 바탕·모서리·글자는 테마 토큰
+     * (canvas.background, canvas.cornerRadius, emptyState.font)을 그대로 쓴다.
+     */
+    fun renderMessage(spec: io.github.rosymaro.familyweekly.layout.RenderSpec, rt: ResolvedTheme, text: String): Bitmap {
+        val t = rt.theme
+        val bmp = Bitmap.createBitmap(spec.widthPx, spec.heightPx, Bitmap.Config.ARGB_8888)
+        val c = Canvas(bmp)
+        val d = spec.density
+        val r = RectF(0f, 0f, spec.widthPx.toFloat(), spec.heightPx.toFloat())
+        val radius = d * (if (t.canvas.matchSystem && spec.systemCornerRadiusDp != null) spec.systemCornerRadiusDp else t.canvas.cornerRadius)
+        c.drawRoundRect(r, radius, radius, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = rt.color(t.canvas.background) })
+        val f = t.emptyState.font
+        val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            textSize = f.size * d * spec.fontScale * t.scale
+            color = if (f.color.isAuto) ColorMath.readableOn(rt.color(t.canvas.background)) else rt.color(f.color)
+            typeface = res.typeface(t.fonts[f.font] ?: f.font)
+        }
+        val width = (r.width() - 24 * d).toInt().coerceAtLeast(1)
+        val layout = StaticLayout.Builder.obtain(text, 0, text.length, paint, width)
+            .setAlignment(Layout.Alignment.ALIGN_CENTER).setIncludePad(false).build()
+        c.save()
+        c.translate(12 * d, (r.height() - layout.height) / 2)
+        layout.draw(c)
+        c.restore()
+        return bmp
+    }
+
     private inner class Session(val c: Canvas, val l: WeekLayoutResult, val rt: ResolvedTheme) {
         val t = rt.theme
         val density = l.spec.density

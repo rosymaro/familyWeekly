@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,6 +53,7 @@ import io.github.rosymaro.familyweekly.domain.WeekRange
 import io.github.rosymaro.familyweekly.theme.ThemePresets
 import io.github.rosymaro.familyweekly.theme.ThemeResolver
 import io.github.rosymaro.familyweekly.ui.common.WeekPreviewImage
+import io.github.rosymaro.familyweekly.widget.WidgetLogic
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 
@@ -75,6 +77,7 @@ fun HomeScreen(
     val data by vm.data.collectAsStateWithLifecycle()
     val loadIssue by vm.loadIssue.collectAsStateWithLifecycle()
     var dialog by remember { mutableStateOf<HomeDialog?>(null) }
+    var showWidgetHelp by remember { mutableStateOf(false) }
     val now = rememberMinuteTicker()
     val dark = ThemeResolver.isDark(data.settings.darkMode, isSystemInDarkTheme())
     val holidayUpdates by vm.holidayUpdates.collectAsStateWithLifecycle()
@@ -128,11 +131,22 @@ fun HomeScreen(
                     onDelete = { dialog = HomeDialog.Delete(schedule.id) },
                     onTheme = { dialog = HomeDialog.Theme(schedule.id) },
                     onToggleAlarms = { vm.toggleAlarms(schedule.id) },
+                    widgetCount = WidgetLogic.countFor(data, schedule.id),
+                    onAddWidget = { if (!vm.pinWidget(schedule.id)) showWidgetHelp = true },
                     onMoveUp = { vm.move(schedule.id, index - 1) },
                     onMoveDown = { vm.move(schedule.id, index + 1) },
                 )
             }
         }
+    }
+
+    if (showWidgetHelp) {
+        AlertDialog(
+            onDismissRequest = { showWidgetHelp = false },
+            title = { Text("위젯 추가 방법") },
+            text = { Text("홈 화면 빈 곳을 길게 누르기 → 위젯 → familyWeekly '주간 시간표'를 끌어다 놓기 → 아이 스케줄 고르기") },
+            confirmButton = { TextButton(onClick = { showWidgetHelp = false }) { Text("확인") } },
+        )
     }
 
     when (val d = dialog) {
@@ -172,6 +186,8 @@ private fun ScheduleCard(
     onDelete: () -> Unit,
     onTheme: () -> Unit,
     onToggleAlarms: () -> Unit,
+    widgetCount: Int,
+    onAddWidget: () -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
 ) {
@@ -184,6 +200,9 @@ private fun ScheduleCard(
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(summary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (widgetCount > 0) {
+                        Text("홈 화면 위젯 ${widgetCount}개", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    }
                     if (!schedule.alarmsEnabled) {
                         Text("알림 꺼짐", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
                     }
@@ -197,6 +216,7 @@ private fun ScheduleCard(
                             add("이름 변경" to onRename)
                             add("복제" to onDuplicate)
                             add("디자인" to onTheme)
+                            add("홈 화면에 위젯 추가" to onAddWidget)
                             add((if (schedule.alarmsEnabled) "알림 끄기" else "알림 켜기") to onToggleAlarms)
                             if (!isFirst) add("위로 옮기기" to onMoveUp)
                             if (!isLast) add("아래로 옮기기" to onMoveDown)

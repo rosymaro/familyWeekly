@@ -7,9 +7,14 @@ import io.github.rosymaro.familyweekly.data.HolidayRepository
 import io.github.rosymaro.familyweekly.data.HolidaySyncer
 import io.github.rosymaro.familyweekly.data.KasiHolidayApi
 import io.github.rosymaro.familyweekly.theme.ThemePresets
+import io.github.rosymaro.familyweekly.widget.WidgetUpdater
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -31,10 +36,22 @@ class FamilyWeeklyApp : Application() {
 
     val presets: ThemePresets by lazy { ThemePresets(::readAsset) }
 
+    val widgets: WidgetUpdater by lazy { WidgetUpdater(this) }
+
+    @OptIn(FlowPreview::class)
     override fun onCreate() {
         super.onCreate()
+        // 일정·공휴일이 바뀌면 위젯을 다시 그린다 (저장이 몰려도 한 번만)
+        appScope.launch {
+            combine(store.data, holidays.updates) { d, _ -> d }
+                .drop(1)
+                .debounce(400)
+                .collect { runCatching { widgets.updateAll() } }
+        }
         // 인증키가 있으면 한 달에 한 번 공휴일을 새로 받는다 (실패하면 기존 자료 그대로)
         appScope.launch { runCatching { holidaySyncer.syncIfNeeded(holidayKey.key.value) } }
+        // 앱을 열 때마다 한 번 (화면이 켜진 뒤 첫 갱신)
+        appScope.launch { runCatching { widgets.updateAll() } }
     }
 
     private fun readAsset(path: String): String? =
