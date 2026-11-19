@@ -49,10 +49,7 @@ class DesignEditorViewModel(app: FamilyWeeklyApp, handle: SavedStateHandle) : St
     fun baseLayers(): List<JsonObject?> = library.baseAndOverride(data.value, target).first
 
     /** 지금 보이는 값 (기본값 + 아래 레이어 + 편집 중 덮어쓰기, 크기 단계 전) */
-    fun effective(): JsonObject {
-        val merged = (baseLayers() + _draft.value).fold(ThemeResolver.defaultsJson) { acc, l -> ThemeResolver.merge(acc, l) }
-        return ThemeResolver.encode(ThemeResolver.decode(merged))
-    }
+    fun effective(): JsonObject = ThemeResolver.effective(baseLayers() + _draft.value)
 
     fun set(path: List<String>, value: JsonElement) {
         _draft.value = TokenSchema.set(_draft.value, path, value)
