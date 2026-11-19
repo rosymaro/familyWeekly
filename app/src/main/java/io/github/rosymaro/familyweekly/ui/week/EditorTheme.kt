@@ -17,6 +17,10 @@ object EditorTheme {
     const val MIN_START_MIN = 7 * 60
     const val MIN_END_MIN = 22 * 60
 
+    /** 길게 누르기 진행 원: 처음 반지름 → 길게 누르기가 된 순간 반지름 (dp) */
+    const val PRESS_RING_START_DP = 72f
+    const val PRESS_RING_END_DP = 16f
+
     val override: JsonObject = ThemeResolver.parse(
         """
         {

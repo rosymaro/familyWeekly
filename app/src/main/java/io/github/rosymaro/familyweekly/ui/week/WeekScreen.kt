@@ -1,6 +1,13 @@
 package io.github.rosymaro.familyweekly.ui.week
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.clickable
@@ -321,6 +328,18 @@ private fun WeekEditor(
 
     var drag by remember { mutableStateOf<DragState?>(null) }
     var peek by remember { mutableStateOf(false) }
+    // 길게 누르기 진행 표시: 누른 자리, 0→1 진행 (1이 되면 길게 누르기 완료)
+    var pressAt by remember { mutableStateOf<Offset?>(null) }
+    val pressProgress = remember { Animatable(0f) }
+    val longPressMs = LocalViewConfiguration.current.longPressTimeoutMillis
+    LaunchedEffect(pressAt != null) {
+        if (pressAt != null) {
+            pressProgress.snapTo(0f)
+            pressProgress.animateTo(1f, tween(durationMillis = longPressMs.toInt(), easing = LinearEasing))
+        } else {
+            pressProgress.snapTo(0f)
+        }
+    }
 
     // 드래그 중에는 옮긴 상태로 미리 계산해서 보여 준다 (겹치면 lane으로 나란히)
     val shownData = drag?.let { d ->
@@ -360,6 +379,21 @@ private fun WeekEditor(
                                 " 일정을 누르면 수정, 길게 눌러 끌면 이동, 빈 칸을 길게 누르면 새 일정. 위쪽 '목록으로 보기'에서 하나씩 고를 수도 있어요."
                         }
                         .pointerInput(Unit) {
+                            // 누르고 있는 동안만 표시 (손을 떼거나 스크롤하면 사라짐). 다른 제스처는 방해하지 않음
+                            awaitEachGesture {
+                                val down = awaitFirstDown(requireUnconsumed = false)
+                                pressAt = down.position
+                                val slop = viewConfiguration.touchSlop
+                                while (true) {
+                                    val ev = awaitPointerEvent(PointerEventPass.Initial)
+                                    val c = ev.changes.firstOrNull { it.id == down.id } ?: break
+                                    if (!c.pressed) break
+                                    if (drag == null && pressProgress.value < 1f && (c.position - down.position).getDistance() > slop) break
+                                }
+                                pressAt = null
+                            }
+                        }
+                        .pointerInput(Unit) {
                             detectTapGestures(
                                 onLongPress = { /* 길게 누르기는 아래 드래그 감지에서 */ },
                                 onTap = { pos ->
@@ -390,6 +424,7 @@ private fun WeekEditor(
                                                 drag = DragState(b, 0f, 0f, HitTest.dragTarget(l, b, 0f, 0f))
                                             } else {
                                                 pendingNew = HitTest.newBlockAt(l, pos.x, pos.y)
+                                                if (pendingNew != null) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             }
                                         }
                                     }
@@ -442,6 +477,22 @@ private fun WeekEditor(
                 ) {
                     val shown: WeekLayoutResult = if (peek) layout.copy(postIts = emptyList()) else layout
                     drawIntoCanvas { painter.draw(it.nativeCanvas, shown, rt) }
+                    // 길게 누르기 진행: 큰 원이 손가락 쪽으로 점점 작아지고, 다 작아지면 "됐다" 점
+                    val at = pressAt
+                    if (at != null && drag == null && !peek && pressProgress.value > 0.08f) {
+                        val p = pressProgress.value
+                        val accent = Color(rt.color(rt.theme.nowLine.color))
+                        val start = EditorTheme.PRESS_RING_START_DP.dp.toPx()
+                        val end = EditorTheme.PRESS_RING_END_DP.dp.toPx()
+                        val radius = start + (end - start) * p
+                        if (p < 1f) {
+                            drawCircle(accent.copy(alpha = 0.10f + 0.15f * p), radius, at)
+                            drawCircle(accent.copy(alpha = 0.35f + 0.45f * p), radius, at, style = Stroke(width = 3.dp.toPx()))
+                        } else {
+                            drawCircle(accent.copy(alpha = 0.55f), end, at)
+                            drawCircle(accent, end, at, style = Stroke(width = 3.dp.toPx()))
+                        }
+                    }
                     drag?.let { d ->
                         val box = HitTest.targetBox(layout, d.target)
                         val accent = Color(rt.color(rt.theme.nowLine.color))

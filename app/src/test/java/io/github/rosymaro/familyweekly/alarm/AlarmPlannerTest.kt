@@ -132,6 +132,13 @@ class AlarmPlannerTest {
     }
 
     @Test
+    fun alarmsAreOffByDefault() {
+        // 새로 설치한 앱: 알림은 꺼져 있음
+        assertFalse(io.github.rosymaro.familyweekly.domain.Settings().alarmsEnabled)
+        assertTrue(plan(data.copy(settings = io.github.rosymaro.familyweekly.domain.Settings())).isEmpty())
+    }
+
+    @Test
     fun switchesOff() {
         assertTrue(plan(data.copy(settings = data.settings.copy(alarmsEnabled = false))).isEmpty())
         val p = plan(data.mapSchedule("harin") { it.copy(alarmsEnabled = false) })

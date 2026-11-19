@@ -11,6 +11,8 @@ import io.github.rosymaro.familyweekly.data.KasiHolidayApi
 import io.github.rosymaro.familyweekly.theme.ThemeLibrary
 import io.github.rosymaro.familyweekly.theme.ThemePresets
 import io.github.rosymaro.familyweekly.widget.WidgetUpdater
+import android.util.Log
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -27,7 +29,12 @@ class FamilyWeeklyApp : Application() {
     val store: AppStore by lazy { AppStore(filesDir) }
 
     /** 저장처럼 화면이 닫혀도 끝까지 해야 하는 일. (화면 ViewModel 범위에서 하면 뒤로 가기와 함께 취소될 수 있음) */
-    val appScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    val appScope: CoroutineScope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, e ->
+            // 뒤에서 하는 일(알림 계산·위젯·공휴일)이 실패해도 앱이 꺼지지 않게: 기록만 남긴다
+            Log.e("FamilyWeekly", "background work failed", e)
+        },
+    )
 
     val holidays: HolidayRepository by lazy {
         HolidayRepository(cacheFile = File(filesDir, HolidayRepository.CACHE_FILE)) {

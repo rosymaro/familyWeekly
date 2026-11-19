@@ -54,5 +54,6 @@ object TestData {
         ),
     )
 
-    val data = AppData(schedules = listOf(harin, doyun))
+    /** 알림 계산 테스트를 위해 앱 전체 알림은 켜 둔다 (앱 기본값은 꺼짐). */
+    val data = AppData(schedules = listOf(harin, doyun), settings = Settings(alarmsEnabled = true))
 }
