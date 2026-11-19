@@ -149,7 +149,7 @@ app/src/test/                      # JVM 유닛 테스트
 | `id`, `title` | 예: "여름방학", "할머니댁" |
 | `from`, `to` | 날짜 범위 (포함) |
 | `scheduleIds` | 적용할 스케줄 (여러 개) |
-| `blockFilter` | `ALL` 또는 특정 `blockIds` (예: 학원만 방학) |
+| `blockIds` | 없으면(null) 대상 스케줄의 모든 블록, 있으면 그 블록들만 (예: 학원만 방학) |
 
 휴가 기간 동안 해당 반복 블록은 **사라지지 않고 '취소' 상태로 표시**되고, 알림은 울리지 않는다.
 
@@ -159,9 +159,9 @@ app/src/test/                      # JVM 유닛 테스트
 | --- | --- |
 | `id`, `title`, `memo` | |
 | `date` | 날짜 |
-| `startMin`, `endMin` | 5분 단위. `allDay: true`면 시각 없이 요일 머리말 쪽에 붙음 |
+| `startMin`, `endMin` | 5분 단위. `allDay: true`면 시각 없이 요일 머리말 쪽에 붙고, 그날 모든 블록과 겹친 것으로 본다 |
 | `scheduleIds` | 붙일 스케줄 (**여러 개 가능**, 1개 이상) |
-| `overlapAction` | 스케줄별 `{ scheduleId: KEEP | CANCEL }` — 시간이 겹치는 기존 블록을 유지할지 취소할지 |
+| `overlapActions` | 스케줄별 `{ scheduleId: KEEP | CANCEL }` — 시간이 겹치는 기존 블록을 유지할지 취소할지. 항목이 없는 스케줄은 KEEP으로 계산 |
 | `paperKey` | 포스트잇 종이 색 키 (테마 `postIt.papers`) |
 | `alarm` | 알림 규칙 (없으면 설정의 특이 일정 기본값) |
 
@@ -340,7 +340,7 @@ app/src/test/                      # JVM 유닛 테스트
 ## 8. 진행 상황
 
 - [x] Phase 0
-- [ ] Phase 1
+- [x] Phase 1
 - [ ] Phase 2
 - [ ] Phase 3
 - [ ] Phase 4
