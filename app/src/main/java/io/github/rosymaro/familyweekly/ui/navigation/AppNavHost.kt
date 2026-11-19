@@ -17,20 +17,8 @@ import io.github.rosymaro.familyweekly.ui.settings.SettingsScreen
 import io.github.rosymaro.familyweekly.ui.week.WeekScreen
 
 @Composable
-fun AppNavHost(
-    app: FamilyWeeklyApp,
-    openScheduleId: String? = null,
-    onOpenedSchedule: () -> Unit = {},
-    editWidgetId: Int? = null,
-    onOpenedWidgetEditor: () -> Unit = {},
-) {
+fun AppNavHost(app: FamilyWeeklyApp, openScheduleId: String? = null, onOpenedSchedule: () -> Unit = {}) {
     val nav = rememberNavController()
-    // 위젯 설정에서 "이 위젯만 꾸미기"로 들어오면 편집기로
-    LaunchedEffect(editWidgetId) {
-        val id = editWidgetId ?: return@LaunchedEffect
-        nav.navigate(DesignEditRoute(DesignEditRoute.WIDGET, id.toString())) { launchSingleTop = true }
-        onOpenedWidgetEditor()
-    }
     // 위젯을 눌러 들어오면 그 스케줄 주간 화면으로 (홈 위에 쌓아서 뒤로 가기는 홈)
     LaunchedEffect(openScheduleId) {
         val id = openScheduleId ?: return@LaunchedEffect

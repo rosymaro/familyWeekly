@@ -85,6 +85,12 @@ object ThemeResolver {
         return ResolvedTheme(decode(merged), isDark, sizeClass)
     }
 
+    /** 레이어를 합친 지금 값 (크기 단계 전) — 디자인 편집기가 보여 줄 값. */
+    fun effective(layers: List<JsonObject?>): JsonObject {
+        val merged = layers.fold(defaultsJson) { acc, l -> merge(acc, l) }
+        return encode(decode(merged))
+    }
+
     fun isDark(mode: DarkMode, systemDark: Boolean): Boolean = when (mode) {
         DarkMode.SYSTEM -> systemDark
         DarkMode.LIGHT -> false
