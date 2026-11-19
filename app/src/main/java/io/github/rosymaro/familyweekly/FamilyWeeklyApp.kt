@@ -1,6 +1,8 @@
 package io.github.rosymaro.familyweekly
 
 import android.app.Application
+import io.github.rosymaro.familyweekly.alarm.AlarmScheduler
+import io.github.rosymaro.familyweekly.alarm.Notifier
 import io.github.rosymaro.familyweekly.data.AppStore
 import io.github.rosymaro.familyweekly.data.HolidayKeyStore
 import io.github.rosymaro.familyweekly.data.HolidayRepository
@@ -37,21 +39,29 @@ class FamilyWeeklyApp : Application() {
     val presets: ThemePresets by lazy { ThemePresets(::readAsset) }
 
     val widgets: WidgetUpdater by lazy { WidgetUpdater(this) }
+    val alarms: AlarmScheduler by lazy { AlarmScheduler(this) }
+    val notifier: Notifier by lazy { Notifier(this) }
 
     @OptIn(FlowPreview::class)
     override fun onCreate() {
         super.onCreate()
-        // 일정·공휴일이 바뀌면 위젯을 다시 그린다 (저장이 몰려도 한 번만)
+        // 일정·공휴일이 바뀌면 위젯을 다시 그리고 알림을 다시 계산한다 (저장이 몰려도 한 번만)
         appScope.launch {
             combine(store.data, holidays.updates) { d, _ -> d }
                 .drop(1)
                 .debounce(400)
-                .collect { runCatching { widgets.updateAll() } }
+                .collect {
+                    runCatching { widgets.updateAll() }
+                    runCatching { alarms.reschedule() }
+                }
         }
         // 인증키가 있으면 한 달에 한 번 공휴일을 새로 받는다 (실패하면 기존 자료 그대로)
         appScope.launch { runCatching { holidaySyncer.syncIfNeeded(holidayKey.key.value) } }
         // 앱을 열 때마다 한 번 (화면이 켜진 뒤 첫 갱신)
-        appScope.launch { runCatching { widgets.updateAll() } }
+        appScope.launch {
+            runCatching { widgets.updateAll() }
+            runCatching { alarms.reschedule() }
+        }
     }
 
     private fun readAsset(path: String): String? =

@@ -64,6 +64,8 @@ class HomeViewModel(app: FamilyWeeklyApp) : StoreViewModel(app) {
         return manager.requestPinAppWidget(ComponentName(app, ScheduleWidgetProvider::class.java), null, callback)
     }
 
+    fun notificationsAllowed(): Boolean = app.alarms.permissions().notifications
+
     fun toggleAlarms(id: String) = update { it.mapSchedule(id) { s -> s.copy(alarmsEnabled = !s.alarmsEnabled) } }
 
     companion object {

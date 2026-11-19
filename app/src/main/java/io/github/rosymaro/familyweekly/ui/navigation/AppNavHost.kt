@@ -16,6 +16,7 @@ import io.github.rosymaro.familyweekly.ui.design.DesignPreviewScreen
 import io.github.rosymaro.familyweekly.ui.event.EventEditScreen
 import io.github.rosymaro.familyweekly.ui.event.VacationEditScreen
 import io.github.rosymaro.familyweekly.ui.home.HomeScreen
+import io.github.rosymaro.familyweekly.ui.settings.SettingsScreen
 import io.github.rosymaro.familyweekly.ui.week.WeekScreen
 
 @Composable
@@ -38,6 +39,7 @@ fun AppNavHost(app: FamilyWeeklyApp, openScheduleId: String? = null, onOpenedSch
                 onOpenSchedule = { nav.navigate(WeekRoute(it)) },
                 onOpenDesignPreview = { nav.navigate(DesignPreviewRoute) },
                 onOpenCalendar = { nav.navigate(CalendarRoute) },
+                onOpenSettings = { nav.navigate(SettingsRoute) },
             )
         }
         composable<WeekRoute> {
@@ -59,6 +61,9 @@ fun AppNavHost(app: FamilyWeeklyApp, openScheduleId: String? = null, onOpenedSch
         composable<EventEditRoute> { EventEditScreen(onDone = { nav.popBackStack() }) }
         composable<VacationEditRoute> { VacationEditScreen(onDone = { nav.popBackStack() }) }
         composable<HolidaysRoute> { HolidaysScreen(onBack = { nav.popBackStack() }) }
+        composable<SettingsRoute> {
+            SettingsScreen(onBack = { nav.popBackStack() }, onManageHolidays = { nav.navigate(HolidaysRoute) })
+        }
         composable<DesignPreviewRoute> {
             Scaffold { padding ->
                 DesignPreviewScreen(app.presets, onBack = { nav.popBackStack() }, modifier = Modifier.fillMaxSize().padding(padding))

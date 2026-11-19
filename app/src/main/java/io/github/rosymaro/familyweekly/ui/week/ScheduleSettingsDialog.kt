@@ -21,16 +21,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.rosymaro.familyweekly.domain.AlarmRule
 import io.github.rosymaro.familyweekly.domain.HolidayPolicy
 import io.github.rosymaro.familyweekly.domain.Schedule
 import io.github.rosymaro.familyweekly.domain.TimeRange
 import io.github.rosymaro.familyweekly.domain.TimeRangeMode
 import io.github.rosymaro.familyweekly.ui.common.TimeStepper
 import io.github.rosymaro.familyweekly.ui.home.DaysModeChips
+import io.github.rosymaro.familyweekly.ui.settings.AlarmOverrideRow
 
 /** 스케줄 설정: 이름·이모지, 요일, 위젯 시간 범위, 공휴일 처리. */
 @Composable
-fun ScheduleSettingsDialog(schedule: Schedule, onDismiss: () -> Unit, onSave: (Schedule) -> Unit) {
+fun ScheduleSettingsDialog(schedule: Schedule, appDefaultAlarm: AlarmRule, onDismiss: () -> Unit, onSave: (Schedule) -> Unit) {
     var s by remember(schedule) { mutableStateOf(schedule) }
     val range = s.timeRange
     AlertDialog(
@@ -52,6 +54,20 @@ fun ScheduleSettingsDialog(schedule: Schedule, onDismiss: () -> Unit, onSave: (S
                 if (range.mode == TimeRangeMode.FIXED) {
                     TimeStepper("시작", range.startMin, { v -> s = s.copy(timeRange = fixRange(range, start = v)) }, max = 23 * 60)
                     TimeStepper("끝", range.endMin, { v -> s = s.copy(timeRange = fixRange(range, end = v)) }, min = 60)
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("이 아이 알림", modifier = Modifier.weight(1f))
+                    Switch(s.alarmsEnabled, { s = s.copy(alarmsEnabled = it) })
+                }
+                if (s.alarmsEnabled) {
+                    AlarmOverrideRow(
+                        label = "이 아이 기본 알림 따로",
+                        rule = s.alarmDefaults,
+                        inherited = appDefaultAlarm,
+                        inheritedLabel = "앱 기본 알림",
+                        onChange = { s = s.copy(alarmDefaults = it) },
+                    )
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {

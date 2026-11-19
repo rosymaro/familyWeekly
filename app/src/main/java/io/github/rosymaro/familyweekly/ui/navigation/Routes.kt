@@ -25,6 +25,10 @@ data class EventEditRoute(val eventId: String? = null, val date: String? = null,
 @Serializable
 data class VacationEditRoute(val vacationId: String? = null, val date: String? = null)
 
+/** 설정: 화면, 알림 전역 설정, 권한 안내, 다음 알림. */
+@Serializable
+object SettingsRoute
+
 /** 공휴일 관리. */
 @Serializable
 object HolidaysRoute

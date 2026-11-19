@@ -50,6 +50,7 @@ import io.github.rosymaro.familyweekly.ui.common.ColorKeyChips
 import io.github.rosymaro.familyweekly.ui.common.DateField
 import io.github.rosymaro.familyweekly.ui.common.TimeStepper
 import io.github.rosymaro.familyweekly.ui.common.korean
+import io.github.rosymaro.familyweekly.ui.settings.AlarmOverrideRow
 
 /** 특이 일정 추가/수정. 겹치는 기존 일정은 스케줄마다 "유지/취소"를 꼭 고르게 한다. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -150,7 +151,18 @@ fun EventEditScreen(onDone: () -> Unit, vm: EventEditViewModel = viewModel(facto
             Text("포스트잇 색", style = MaterialTheme.typography.labelLarge)
             ColorKeyChips(papers, e.paperKey) { k -> vm.edit { it.copy(paperKey = k) } }
             OutlinedTextField(e.memo.orEmpty(), { m -> vm.edit { it.copy(memo = m) } }, label = { Text("메모 (선택)") }, modifier = Modifier.fillMaxWidth())
-            Text("알림 설정은 다음 업데이트(Phase 6)에서 추가돼요.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            AlarmOverrideRow(
+                label = "이 일정만 알림 따로",
+                rule = e.alarm,
+                inherited = data.settings.eventDefaultAlarm,
+                inheritedLabel = "특이 일정 기본 알림",
+                onChange = { r -> vm.edit { it.copy(alarm = r) } },
+            )
+            if (e.allDay) Text(
+                "하루 종일 일정은 설정의 '알림 기준 시각'(지금 ${TimeStep.format(data.settings.allDayAlarmMin)})을 시작으로 계산해요.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
             problem?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
