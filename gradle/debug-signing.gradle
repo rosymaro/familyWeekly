@@ -1,0 +1,21 @@
+// 고정 디버그 서명 설정 — 수정 금지 (CLAUDE.md "고정 디버그 서명" 참고)
+// 모든 PC와 CI가 같은 키로 디버그 APK에 서명해야, 폰에 설치된 앱 위에 새 빌드를 덮어 설치할 수 있다.
+// app/build.gradle(.kts)에서 android 플러그인 다음에 적용한다:
+//   Groovy: apply from: rootProject.file("gradle/debug-signing.gradle")
+//   Kotlin: apply(from = rootProject.file("gradle/debug-signing.gradle"))
+android {
+    signingConfigs {
+        debug {
+            storeFile rootProject.file("keystore/debug.keystore")
+            storeType "pkcs12"
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+}

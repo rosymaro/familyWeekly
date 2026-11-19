@@ -33,3 +33,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# 고정 디버그 키스토어는 커밋한다 (폰 업데이트 설치용 서명 유지, CLAUDE.md 참고)
+!keystore/debug.keystore

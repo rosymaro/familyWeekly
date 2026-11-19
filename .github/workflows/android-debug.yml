@@ -1,0 +1,78 @@
+# .github/workflows/android-debug.yml
+# 푸시할 때마다: 테스트(데이터 검증 포함) → 디버그 APK 빌드 → 서명 확인 → 'debug-latest' 릴리스에 업로드
+name: Android debug APK
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-debug
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 아직 안드로이드 프로젝트가 없으면(gradlew 없음) 나머지 단계 건너뜀
+      - name: Check project exists
+        id: check
+        run: |
+          if [ -f gradlew ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+
+      - if: steps.check.outputs.ok == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - if: steps.check.outputs.ok == 'true'
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Test + build debug APK
+        if: steps.check.outputs.ok == 'true'
+        run: |
+          chmod +x ./gradlew
+          ./gradlew testDebugUnitTest assembleDebug
+
+      # 고정 디버그 키스토어로 서명됐는지 확인 — 수정 금지 (CLAUDE.md 참고)
+      - name: Verify signing key (fixed debug keystore)
+        if: steps.check.outputs.ok == 'true'
+        run: |
+          set -euo pipefail
+          if [ ! -f keystore/debug.sha256 ]; then
+            echo "::error::keystore/debug.sha256이 없습니다."
+            exit 1
+          fi
+          APK=$(ls app/build/outputs/apk/debug/*.apk | head -n 1)
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -n 1)apksigner
+          CERTS=$("$APKSIGNER" verify --print-certs "$APK")
+          ACTUAL=$(echo "$CERTS" \
+            | grep -m1 'SHA-256 digest' | awk '{print $NF}' | tr -d ':[:space:]' | tr 'A-F' 'a-f')
+          EXPECTED=$(tr -d ':[:space:]' < keystore/debug.sha256 | tr 'A-F' 'a-f')
+          echo "expected=$EXPECTED"
+          echo "actual=$ACTUAL"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "::error::서명 키가 바뀌었습니다. 폰에서 업데이트 설치가 실패합니다."
+            exit 1
+          fi
+
+      - name: Publish to debug-latest release
+        if: steps.check.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK=$(ls app/build/outputs/apk/debug/*.apk | head -n 1)
+          SHORT_SHA=${GITHUB_SHA::7}
+          gh release delete debug-latest --yes --cleanup-tag || true
+          gh release create debug-latest "$APK" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "Debug ${GITHUB_REF_NAME} @ ${SHORT_SHA}" \
+            --notes "Branch: ${GITHUB_REF_NAME}, commit: ${GITHUB_SHA}"
