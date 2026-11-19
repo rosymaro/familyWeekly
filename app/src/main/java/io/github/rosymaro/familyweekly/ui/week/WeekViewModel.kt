@@ -19,6 +19,7 @@ class WeekViewModel(app: FamilyWeeklyApp, private val handle: SavedStateHandle) 
 
     val scheduleId: String = handle.toRoute<WeekRoute>().scheduleId
     val presets = app.presets
+    val themes = app.themes
 
     /** 이번 주 기준 몇 주 앞/뒤 (화면 회전에도 유지). */
     val weekOffset: StateFlow<Long> = handle.getStateFlow(KEY_OFFSET, 0L)

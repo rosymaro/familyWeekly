@@ -116,12 +116,13 @@ fun DeleteScheduleDialog(name: String, orphans: Orphans, onDismiss: () -> Unit, 
     )
 }
 
-/** 디자인(테마 프리셋) 고르기. 세부 편집은 Phase 7. */
+/** 디자인 고르기 + "이 아이만 따로 꾸미기"(디자인 편집기). */
 @Composable
 fun ThemePickerDialog(
     options: List<Pair<String, String>>,
     current: String,
     onDismiss: () -> Unit,
+    onCustomize: () -> Unit,
     onPick: (String) -> Unit,
 ) {
     var selected by rememberSaveable { mutableStateOf(current) }
@@ -139,6 +140,7 @@ fun ThemePickerDialog(
                         Text(label)
                     }
                 }
+                TextButton(onClick = onCustomize) { Text("이 아이만 따로 꾸미기 (색·글꼴·포스트잇…)") }
             }
         },
         confirmButton = { TextButton(onClick = { onPick(selected) }) { Text("적용") } },

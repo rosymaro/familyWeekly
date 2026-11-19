@@ -12,6 +12,7 @@ import java.time.YearMonth
 class CalendarViewModel(app: FamilyWeeklyApp, private val handle: SavedStateHandle) : StoreViewModel(app) {
 
     val presets = app.presets
+    val themes = app.themes
 
     /** 보고 있는 달 ("2026-11"), 고른 날 ("2026-11-19"). 화면 회전에도 유지. */
     val month: StateFlow<String> = handle.getStateFlow(KEY_MONTH, YearMonth.now().toString())

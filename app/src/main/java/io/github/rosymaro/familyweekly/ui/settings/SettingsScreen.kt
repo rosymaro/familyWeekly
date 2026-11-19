@@ -125,7 +125,7 @@ class SettingsViewModel(app: FamilyWeeklyApp) : StoreViewModel(app) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onBack: () -> Unit, onManageHolidays: () -> Unit, vm: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)) {
+fun SettingsScreen(onBack: () -> Unit, onManageHolidays: () -> Unit, onOpenDesign: () -> Unit, vm: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)) {
     val data by vm.data.collectAsStateWithLifecycle()
     val perms by vm.permissions.collectAsStateWithLifecycle()
     val next by vm.next.collectAsStateWithLifecycle()
@@ -158,6 +158,7 @@ fun SettingsScreen(onBack: () -> Unit, onManageHolidays: () -> Unit, vm: Setting
                 }
             }
             Text("위젯 다크 모드는 위젯마다 따로 정해요 (위젯 길게 눌러 설정).", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            TextButton(onClick = onOpenDesign) { Text("디자인 (색·글꼴·포스트잇 모양 꾸미기)") }
 
             HorizontalDivider()
             Text("알림", style = MaterialTheme.typography.titleSmall)

@@ -4,6 +4,7 @@ package io.github.rosymaro.familyweekly.domain
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.json.JsonObject
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -21,12 +22,17 @@ data class AppData(
     val vacations: List<Vacation> = emptyList(),
     val customHolidays: List<CustomHoliday> = emptyList(),
     val widgets: List<WidgetBinding> = emptyList(),
+    /** 사용자 디자인. id가 기본 프리셋 id면 그 프리셋을 고친 것, 아니면 새로 만든 디자인 (theme/ThemeLibrary). */
+    val themes: List<UserTheme> = emptyList(),
 ) {
     fun schedule(id: String): Schedule? = schedules.firstOrNull { it.id == id }
 
     companion object {
-        /** 1: 처음 / 2: SpecialEvent.detachedFrom(포스트잇 떼기) / 3: Settings.allDayAlarmMin(하루 종일 일정 알림 기준 시각) */
-        const val CURRENT_VERSION = 3
+        /**
+         * 1: 처음 / 2: SpecialEvent.detachedFrom(포스트잇 떼기) / 3: Settings.allDayAlarmMin(하루 종일 일정 알림 기준 시각)
+         * 4: themes(사용자 디자인), Schedule.themeOverride, WidgetBinding.themeOverride (디자인 편집기)
+         */
+        const val CURRENT_VERSION = 4
     }
 }
 
@@ -101,6 +107,8 @@ data class Schedule(
     val days: DaysMode = DaysMode.MON_FRI,
     val timeRange: TimeRange = TimeRange(),
     val themeId: String? = null,
+    /** 이 스케줄에만 덮어쓴 디자인 토큰 (부분 JSON, 바꾼 토큰만). */
+    val themeOverride: JsonObject? = null,
     /** 이 스케줄 블록들의 기본 알림. null이면 Settings.defaultAlarm. */
     val alarmDefaults: AlarmRule? = null,
     val alarmsEnabled: Boolean = true,
@@ -226,9 +234,23 @@ data class WidgetBinding(
     val appWidgetId: Int,
     /** null이면 연결된 스케줄 없음 (스케줄이 삭제됨). */
     val scheduleId: String?,
-    /** null이면 스케줄 테마. (토큰 부분 덮어쓰기는 Phase 2/7에서 추가) */
+    /** null이면 스케줄 테마. */
     val themeId: String? = null,
     val darkMode: DarkMode = DarkMode.SYSTEM,
+    /** 이 위젯에만 덮어쓴 디자인 토큰 (부분 JSON, 바꾼 토큰만). */
+    val themeOverride: JsonObject? = null,
+)
+
+/**
+ * 사용자 디자인 = 기본 프리셋 [baseId] 위에 [overrides](바꾼 토큰만)를 얹은 것.
+ * [id]가 기본 프리셋 id와 같으면 "그 프리셋을 고친 것"으로 본다.
+ */
+@Serializable
+data class UserTheme(
+    val id: String,
+    val name: String,
+    val baseId: String,
+    val overrides: JsonObject = JsonObject(emptyMap()),
 )
 
 // ───────────── 알림 규칙 (계산·등록은 Phase 6) ─────────────

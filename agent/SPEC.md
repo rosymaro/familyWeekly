@@ -118,6 +118,7 @@ app/src/test/                      # JVM 유닛 테스트
 | `days` | `MON_FRI` 또는 `MON_SUN` (스케줄마다 다를 수 있음) |
 | `timeRange` | `{ "mode": "AUTO" }` 또는 `{ "mode": "FIXED", "startMin": 480, "endMin": 1320 }` |
 | `themeId` | 이 스케줄의 기본 테마 (위젯에서 덮어쓸 수 있음) |
+| `themeOverride` | 이 스케줄만 덮어쓴 디자인 토큰 (부분 JSON, 저장 형식 4) |
 | `alarmDefaults` | 이 스케줄 블록들의 기본 알림 규칙 (5절) |
 | `alarmsEnabled` | 스케줄 전체 알림 켜기/끄기 |
 | `holidayPolicy` | `SHOW_ONLY`(표시만) / `CANCEL_BLOCKS`(공휴일엔 반복 블록 취소 처리) |
@@ -205,7 +206,7 @@ app/src/test/                      # JVM 유닛 테스트
 | --- | --- |
 | `appWidgetId` | |
 | `scheduleId` | 연결된 스케줄 (스케줄 하나 = 위젯 하나 기준. 같은 스케줄을 두 위젯에 거는 것도 막지는 않음) |
-| `themeOverride` | `null`이면 스케줄 테마. 있으면 이 위젯만의 테마 id 또는 토큰 부분 덮어쓰기 |
+| `themeId` / `themeOverride` | 위젯만 다른 디자인 id / 이 위젯만 덮어쓴 토큰 (부분 JSON). 둘 다 없으면 스케줄 디자인 |
 | `darkMode` | `SYSTEM` / `LIGHT` / `DARK` |
 | `weekOffset` | 기본 0 (이번 주). 위젯 화살표로 지난주/다음주 보기는 하지 않음 |
 
@@ -363,5 +364,5 @@ app/src/test/                      # JVM 유닛 테스트
 - [x] 공휴일 공식 자료 받기, 포스트잇 떼기 (저장 형식 2)
 - [x] Phase 5
 - [x] Phase 6
-- [ ] Phase 7
+- [x] Phase 7
 - [ ] Phase 8

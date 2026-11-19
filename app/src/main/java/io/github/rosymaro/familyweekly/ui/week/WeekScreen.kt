@@ -84,7 +84,6 @@ import io.github.rosymaro.familyweekly.theme.ResolvedTheme
 import io.github.rosymaro.familyweekly.theme.SizeClass
 import io.github.rosymaro.familyweekly.theme.ThemeResolver
 import io.github.rosymaro.familyweekly.ui.common.korean
-import io.github.rosymaro.familyweekly.ui.common.resolveScheduleTheme
 import io.github.rosymaro.familyweekly.ui.home.rememberMinuteTicker
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -173,8 +172,8 @@ fun WeekScreen(
     }
 
     editing?.let { st ->
-        val palette = remember(schedule?.themeId, dark) {
-            resolveScheduleTheme(vm.presets, schedule?.themeId, SizeClass.LARGE, dark).let { rt ->
+        val palette = remember(schedule?.themeId, schedule?.themeOverride, data.themes, dark) {
+            vm.themes.resolve(data, schedule, SizeClass.LARGE, dark).let { rt ->
                 rt.theme.block.palette.mapValues { rt.color(it.value) }
             }
         }
@@ -287,8 +286,8 @@ private fun WeekEditor(
     val fontScale = LocalConfiguration.current.fontScale
     val haptic = LocalHapticFeedback.current
     val painter = remember { WeekPainter() }
-    val rt: ResolvedTheme = remember(schedule.themeId, dark) {
-        resolveScheduleTheme(vm.presets, schedule.themeId, SizeClass.LARGE, dark, EditorTheme.override)
+    val rt: ResolvedTheme = remember(schedule.themeId, schedule.themeOverride, data.themes, dark) {
+        vm.themes.resolve(data, schedule, SizeClass.LARGE, dark, null, EditorTheme.override)
     }
 
     var drag by remember { mutableStateOf<DragState?>(null) }

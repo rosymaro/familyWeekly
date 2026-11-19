@@ -85,7 +85,7 @@ class WidgetUpdater(private val app: FamilyWeeklyApp) {
         )
         val systemDark = (res.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
         val dark = WidgetLogic.isDark(binding?.darkMode ?: DarkMode.SYSTEM, systemDark)
-        val rt = ThemeResolver.resolve(listOf(app.presets.get(WidgetLogic.themeIdFor(data, binding))), spec.sizeClass, dark)
+        val rt = app.themes.resolve(data, schedule, spec.sizeClass, dark, binding)
 
         val views = RemoteViews(app.packageName, R.layout.widget_schedule)
         if (schedule == null) {

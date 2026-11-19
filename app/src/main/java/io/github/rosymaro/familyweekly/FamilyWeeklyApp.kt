@@ -8,6 +8,7 @@ import io.github.rosymaro.familyweekly.data.HolidayKeyStore
 import io.github.rosymaro.familyweekly.data.HolidayRepository
 import io.github.rosymaro.familyweekly.data.HolidaySyncer
 import io.github.rosymaro.familyweekly.data.KasiHolidayApi
+import io.github.rosymaro.familyweekly.theme.ThemeLibrary
 import io.github.rosymaro.familyweekly.theme.ThemePresets
 import io.github.rosymaro.familyweekly.widget.WidgetUpdater
 import kotlinx.coroutines.CoroutineScope
@@ -37,6 +38,8 @@ class FamilyWeeklyApp : Application() {
     val holidaySyncer: HolidaySyncer by lazy { HolidaySyncer(holidays, KasiHolidayApi()) }
 
     val presets: ThemePresets by lazy { ThemePresets(::readAsset) }
+    /** 프리셋 + 사용자 디자인 + 스케줄·위젯 덮어쓰기 → 최종 테마 */
+    val themes: ThemeLibrary by lazy { ThemeLibrary(presets) }
 
     val widgets: WidgetUpdater by lazy { WidgetUpdater(this) }
     val alarms: AlarmScheduler by lazy { AlarmScheduler(this) }
