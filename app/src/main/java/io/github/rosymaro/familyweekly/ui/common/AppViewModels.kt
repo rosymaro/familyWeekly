@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.rosymaro.familyweekly.FamilyWeeklyApp
@@ -23,13 +22,18 @@ inline fun <reified VM : ViewModel> appViewModelFactory(
     }
 }
 
-/** 저장은 IO 스레드에서. 저장이 실패하면(더 새 버전 파일 등) [onError]. */
+/**
+ * 저장은 앱 범위(IO)에서 한다: 저장하고 바로 화면을 닫아도 저장이 취소되지 않게.
+ * 저장이 실패하면(더 새 버전 파일 등) [onError]를 메인 스레드에서 부른다.
+ */
 abstract class StoreViewModel(protected val app: FamilyWeeklyApp) : ViewModel() {
     val data = app.store.data
 
     protected fun update(onError: (Throwable) -> Unit = {}, transform: (AppData) -> AppData) {
-        viewModelScope.launch {
-            runCatching { withContext(Dispatchers.IO) { app.store.update(transform) } }.onFailure(onError)
+        app.appScope.launch {
+            runCatching { app.store.update(transform) }.onFailure { e ->
+                withContext(Dispatchers.Main) { onError(e) }
+            }
         }
     }
 }
