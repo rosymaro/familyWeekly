@@ -18,13 +18,21 @@
 
 표기: `color` = 라이트/다크 색쌍(알파 포함 `#AARRGGBB` 허용), `dp`, `sp`, `0..1`, `enum`, `font` = 폰트 참조(2-1).
 
+JSON 작성법 (구현: `theme/WidgetTheme.kt`, 기본값 = `soft-paper`):
+- 표의 점(.)은 JSON 중첩. 예: `block.title.size` → `{ "block": { "title": { "size": 10 } } }`
+- 색은 `{ "light": "#FFF2A65A", "dark": "#FFB8742F" }` 또는 문자열 `"#FFF2A65A"`(다크 자동 생성). `"auto"`는 자동 계산(글자색=배경 대비, 테두리=칸 색 진하게)
+- 폰트 묶음 = `{ "font": "body", "size": 10, "weight": 600, "color": ..., "letterSpacing": 0 }`
+- 값을 `null`로 쓰면 그 장식을 끔 (예: `"today": { "columnTint": null }`)
+- 프리셋·덮어쓰기 JSON에는 바꿀 토큰만 쓴다. 모르는 토큰은 무시된다
+
 ### 1-1. canvas (위젯 바탕)
 | 토큰 | 타입 | 설명 |
 |---|---|---|
 | `canvas.background` | color | 바탕 색 |
 | `canvas.gradient` | `{type: NONE/LINEAR/RADIAL, colors[], angle}` | 바탕 그라데이션 |
-| `canvas.backgroundImage` | asset 경로 / null | 종이 질감 등 타일 이미지, `imageAlpha`, `imageMode: TILE/FILL` |
-| `canvas.cornerRadius` | dp | 위젯 모서리 (Android 12+ 시스템 반경과 맞추기 옵션 `matchSystem`) |
+| `canvas.backgroundImage`, `imageAlpha`, `imageMode` | asset 경로 / null, 0..1, TILE/FILL | 종이 질감 등 이미지 |
+| `canvas.cornerRadius` | dp | 위젯 모서리 |
+| `canvas.matchSystem` | bool | Android 12+ 시스템 위젯 반경을 쓸지 (위젯에서만) |
 | `canvas.padding` | dp ×4 | 안쪽 여백 |
 | `canvas.border` | `{width dp, color, style SOLID/DASHED}` | 테두리 |
 | `canvas.opacity` | 0..1 | 위젯 전체 투명도 (배경화면 비침) |
@@ -34,13 +42,15 @@
 |---|---|---|
 | `header.visible` | bool | |
 | `header.height` | dp | |
-| `header.title.font` / `size` / `weight` / `color` / `letterSpacing` | font/sp/int/color/em | 아이 이름 |
+| `header.title` | 폰트 묶음 (`font`, `size`, `weight`, `color`, `letterSpacing`) | 아이 이름 |
 | `header.showEmoji`, `header.emojiSize` | bool, sp | |
-| `header.subtitle.format` | 문자열 | 예 `"M월 d일 ~ M월 d일"`, `"M월 W주차"` |
-| `header.subtitle.*` | 폰트 묶음 | |
+| `header.subtitle.visible` | bool | 주 범위 표시 (compact에서는 기본 끔) |
+| `header.subtitle.format` | 문자열 | java.time 패턴. `~`가 있으면 왼쪽=첫날, 오른쪽=마지막 날. 예 `"M월 d일 ~ M월 d일"`, `"M월 W주차"` |
+| `header.subtitle.font` | 폰트 묶음 | |
 | `header.align` | START/CENTER/END | |
 | `header.background` | color / null | 띠 배경 |
 | `header.decoration` | NONE/UNDERLINE/PILL/RIBBON | 장식 |
+| `header.decorationColor` | color | 장식 색 |
 
 ### 1-3. dayHeader (요일 머리말)
 | 토큰 | 타입 | 설명 |
@@ -82,7 +92,7 @@
 | `grid.alternateColumnTint` | color / null | 줄무늬 열 |
 | `grid.weekendColumnTint` | color / null | 토·일 열 (월~일일 때) |
 | `grid.holidayColumnTint` | color / null | 공휴일 열 |
-| `grid.hourHeight` | dp 또는 `AUTO` | AUTO면 위젯 높이 ÷ 표시 시간 수 |
+| `grid.hourHeight` | dp 또는 `null` | null(=AUTO)이면 위젯 높이 ÷ 표시 시간 수 |
 | `grid.columnGap` | dp | |
 
 ### 1-7. block (반복 일정 칸)
@@ -96,15 +106,16 @@
 | `block.shadow` | `{dx, dy, blur, color}` / null | |
 | `block.inset` | dp | 칸 사이 여백 |
 | `block.padding` | dp ×4 | |
-| `block.title.font` 묶음, `maxLines` | | |
+| `block.title` 폰트 묶음, `block.titleMaxLines` | | 제목, 최대 줄 수 (칸 높이에 맞게 줄어듦) |
 | `block.textColor` | color 또는 `"auto"`(배경 대비 자동) | |
 | `block.showTime` | ALWAYS/IF_FITS/NEVER | 블록 안 시각 표시 |
-| `block.time.font` 묶음, `format` | | `"H:mm"`, `"H:mm–H:mm"` |
+| `block.time` 폰트 묶음, `block.timeFormat` | | `"H:mm"`, `"H:mm–H:mm"` (포스트잇 시각도 이 형식) |
 | `block.showPlace` | ALWAYS/IF_FITS/NEVER | |
-| `block.icon` | NONE/EMOJI/DOT | 제목 앞 |
+| `block.icon` | NONE/EMOJI/DOT | 제목 앞 (EMOJI는 블록에 이모지 필드가 생기면 — 지금은 그리지 않음) |
 | `block.minTextHeight` | dp | 이보다 낮으면 텍스트 생략 |
 | `block.pastDim` | 0..1 | 지난 블록 흐리게 (0이면 안 함) |
 | `block.clipIndicator` | NONE/ARROW/FADE | 시간 범위 밖 잘림 표시 |
+| `block.leftBarWidth` | dp | LEFT_BAR 막대 폭 |
 
 ### 1-8. cancelled (취소 상태) — 활성과 확실히 구분
 | 토큰 | 타입 | 설명 |
@@ -113,10 +124,12 @@
 | `cancelled.keepPaletteHue` | bool | 원래 색을 흐리게 남길지 |
 | `cancelled.alpha` | 0..1 | |
 | `cancelled.pattern` | NONE/HATCH/DOTS/CROSS | 무늬 |
-| `cancelled.patternColor`, `patternSpacing`, `patternAngle` | color, dp, deg | |
+| `cancelled.patternColor`, `patternSpacing`, `patternAngle`, `patternWidth` | color, dp, deg, dp | |
+| `cancelled.textColor` | color | 취소 칸 글자 색 |
 | `cancelled.strikeThrough` | bool | 제목 취소선 |
 | `cancelled.badge` | NONE/TEXT/ICON | "취소" 글자 또는 사유 아이콘 |
 | `cancelled.badgeText` | 문자열 | 기본 "취소" |
+| `cancelled.badgeFont` | 폰트 묶음 | |
 | `cancelled.reasonIcons` | `{MANUAL, EVENT, VACATION, HOLIDAY: 이모지/아이콘 키}` | 사유별 아이콘 |
 | `cancelled.border` | `{width, color, style}` | 점선 테두리 등 |
 
@@ -131,13 +144,19 @@
 | `postIt.shadow` | `{dx, dy, blur, color}` | 종이 그림자 |
 | `postIt.foldCorner` | NONE/BOTTOM_RIGHT/TOP_RIGHT + `size dp` | 접힌 모서리 |
 | `postIt.attach` | NONE/TAPE/PIN/CLIP | 테이프·압정·클립 장식 |
-| `postIt.tapeColor`, `tapeAlpha`, `tapeAngle` | color, 0..1, deg | |
+| `postIt.tapeColor`, `tapeAlpha`, `tapeAngle` | color, 0..1, deg | 테이프 색 (PIN은 압정 색, CLIP은 클립 색으로도 씀) |
 | `postIt.font` 묶음 | | 손글씨 폰트 추천 |
 | `postIt.showTime` | ALWAYS/IF_FITS/NEVER | |
+| `postIt.time` | 폰트 묶음 | 포스트잇 시각 글자 |
+| `postIt.padding` | dp ×4 | |
+| `postIt.minHeight` | dp | 짧은 일정도 글자가 보이는 최소 높이 |
 | `postIt.overlapOpacity` | 0..1 | 아래 블록과 겹칠 때 포스트잇 투명도 |
 | `postIt.underBadge` | NONE/CORNER_TAG | 아래 블록이 **취소됐는지/유지되는지** 포스트잇 모서리 작은 태그로 표시 ("기존 취소" / "기존 유지") |
 | `postIt.underBadgeColors` | `{KEEP: color, CANCEL: color}` | |
+| `postIt.underBadgeTexts` | `{KEEP: 문자열, CANCEL: 문자열}` | 기본 "기존 유지" / "기존 취소" |
+| `postIt.underBadgeFont` | 폰트 묶음 | |
 | `postIt.allDayPlacement` | HEADER_STRIP/TOP_OF_COLUMN | 하루 종일 일정 위치 |
+| `postIt.allDayHeight` | dp | 하루 종일 포스트잇 높이 |
 | `postIt.multiDayStack` | dp | 같은 시간에 여러 포스트잇이 겹칠 때 계단식 어긋남 |
 
 ### 1-10. nowLine (현재 시간 표시선)
@@ -147,13 +166,15 @@
 | `nowLine.span` | TODAY_COLUMN/ALL_COLUMNS | |
 | `nowLine.color`, `width`, `style` | | |
 | `nowLine.head` | NONE/DOT/TRIANGLE/PILL_TIME | 왼쪽 끝 장식 (PILL_TIME은 "14:35" 말풍선) |
+| `nowLine.headSize` | dp | 점·삼각형 크기 |
+| `nowLine.timeFont` | 폰트 묶음 | PILL_TIME 글자 |
 | `nowLine.glow` | `{blur, color}` / null | |
 | `nowLine.aboveStickers` | bool | 포스트잇 위에 그릴지 (기본 true) |
 
 ### 1-11. vacation (휴가)
 | 토큰 | 타입 | 설명 |
 |---|---|---|
-| `vacation.headerBand` | `{visible, color, font 묶음}` | 요일 머리말 아래 "여름방학" 띠 |
+| `vacation.headerBand` | `{visible, height, color, cornerRadius, font 묶음}` | 요일 머리말 아래 "여름방학" 띠 |
 | `vacation.columnTint` | color / null | 휴가인 날 열 틴트 |
 
 ### 1-12. typography / misc
@@ -162,7 +183,8 @@
 | `fonts` | 2-1절 | 테마에서 쓸 폰트 별칭 (`display`, `body`, `hand`) |
 | `scale` | 0.7..1.5 | 테마 전체 글자 배율 |
 | `emptyState.text`, `font` 묶음 | | "일정이 없어요" |
-| `sizeClass.overrides` | `{compact: {...}, medium: {...}, large: {...}}` | 크기 단계별 토큰 덮어쓰기 (2절) |
+| `sizeClass` | `{compact: {...}, medium: {...}, large: {...}}` | 크기 단계별 토큰 덮어쓰기 (부분 JSON, 2절) |
+| `id`, `name` | 문자열 | 테마 id, 편집기에 보일 이름 |
 
 ### 2-1. 폰트
 - `res/font/`에 넣는 폰트는 재배포 가능한 라이선스(OFL 등)만. 라이선스 파일을 `app/src/main/assets/licenses/`에 같이 둔다.

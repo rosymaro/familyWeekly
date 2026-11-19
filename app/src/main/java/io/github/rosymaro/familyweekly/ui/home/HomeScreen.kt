@@ -19,11 +19,12 @@ import androidx.compose.ui.unit.dp
 import io.github.rosymaro.familyweekly.data.LoadIssue
 import io.github.rosymaro.familyweekly.ui.theme.FamilyWeeklyTheme
 
-/** 홈: 지금은 앱 이름 + 불러오기 문제 안내만. 스케줄 목록은 Phase 3. */
+/** 홈: 지금은 앱 이름 + 불러오기 문제 안내 + 디자인 미리보기(개발용). 스케줄 목록은 Phase 3. */
 @Composable
 fun HomeScreen(
     loadIssue: LoadIssue?,
     onDismissIssue: () -> Unit,
+    onOpenDesignPreview: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -47,6 +48,9 @@ fun HomeScreen(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 8.dp),
         )
+        TextButton(onClick = onOpenDesignPreview, modifier = Modifier.padding(top = 24.dp)) {
+            Text("디자인 미리보기 (개발용)")
+        }
     }
 }
 
@@ -74,5 +78,5 @@ private fun LoadIssueCard(issue: LoadIssue, onDismiss: () -> Unit) {
 @Preview
 @Composable
 private fun HomeScreenPreview() {
-    FamilyWeeklyTheme { HomeScreen(loadIssue = null, onDismissIssue = {}) }
+    FamilyWeeklyTheme { HomeScreen(loadIssue = null, onDismissIssue = {}, onOpenDesignPreview = {}) }
 }

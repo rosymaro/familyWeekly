@@ -1,0 +1,340 @@
+{
+  "id": "playful",
+  "name": "아이 방",
+  "fonts": {
+    "display": "system",
+    "body": "system",
+    "hand": "system"
+  },
+  "scale": 1.05,
+  "canvas": {
+    "background": {
+      "light": "#FFFFF4F8",
+      "dark": "#FF241A22"
+    },
+    "gradient": {
+      "type": "LINEAR",
+      "angle": 0,
+      "colors": [
+        {
+          "light": "#FFFFF4F8",
+          "dark": "#FF241A22"
+        },
+        {
+          "light": "#FFEFF7FF",
+          "dark": "#FF18202B"
+        }
+      ]
+    },
+    "cornerRadius": 28,
+    "padding": {
+      "start": 12,
+      "top": 12,
+      "end": 12,
+      "bottom": 12
+    }
+  },
+  "header": {
+    "height": 30,
+    "title": {
+      "font": "display",
+      "size": 17,
+      "weight": 800,
+      "color": {
+        "light": "#FF7A3E9D",
+        "dark": "#FFE0B6F5"
+      }
+    },
+    "emojiSize": 18,
+    "subtitle": {
+      "format": "M월 W주차",
+      "font": {
+        "size": 11,
+        "weight": 600,
+        "color": {
+          "light": "#FFB58BC9",
+          "dark": "#FF9C79AE"
+        }
+      }
+    },
+    "decoration": "PILL",
+    "decorationColor": {
+      "light": "#FFFFE3EE",
+      "dark": "#FF3D2A36"
+    }
+  },
+  "dayHeader": {
+    "labelFormat": "E",
+    "font": {
+      "size": 12,
+      "weight": 800,
+      "color": {
+        "light": "#FF5B4A66",
+        "dark": "#FFE6D8EE"
+      }
+    },
+    "saturdayColor": {
+      "light": "#FF4A86E8",
+      "dark": "#FF8EB6F5"
+    },
+    "sundayColor": {
+      "light": "#FFFF5C7A",
+      "dark": "#FFFF92A6"
+    },
+    "holidayColor": {
+      "light": "#FFFF5C7A",
+      "dark": "#FFFF92A6"
+    },
+    "holidayNameFont": {
+      "size": 8,
+      "weight": 700,
+      "color": {
+        "light": "#FFFF5C7A",
+        "dark": "#FFFF92A6"
+      }
+    },
+    "holidayMark": "BADGE"
+  },
+  "today": {
+    "headerStyle": "CIRCLE_DATE",
+    "headerColor": {
+      "light": "#FFFFB347",
+      "dark": "#FFD98B1F"
+    },
+    "headerTextColor": {
+      "light": "#FFFFFFFF",
+      "dark": "#FF241A22"
+    },
+    "columnTint": {
+      "light": "#1AFFB347",
+      "dark": "#24FFB347"
+    },
+    "columnBorder": {
+      "width": 1.5,
+      "color": {
+        "light": "#66FFB347",
+        "dark": "#66D98B1F"
+      },
+      "style": "DASHED"
+    }
+  },
+  "timeAxis": {
+    "width": 22,
+    "font": {
+      "size": 9,
+      "weight": 700,
+      "color": {
+        "light": "#FFB58BC9",
+        "dark": "#FF9C79AE"
+      }
+    }
+  },
+  "grid": {
+    "hourLine": {
+      "width": 1,
+      "color": {
+        "light": "#14000000",
+        "dark": "#1AFFFFFF"
+      },
+      "style": "DASHED"
+    },
+    "alternateColumnTint": {
+      "light": "#08FF5C7A",
+      "dark": "#0AFF92A6"
+    },
+    "weekendColumnTint": null,
+    "columnGap": 3
+  },
+  "block": {
+    "palette": {
+      "default": {
+        "light": "#FFB8B0D9",
+        "dark": "#FF7E76A3"
+      },
+      "peach": {
+        "light": "#FFFF9F5A",
+        "dark": "#FFE07B33"
+      },
+      "mint": {
+        "light": "#FF3CC9A0",
+        "dark": "#FF2AA581"
+      },
+      "sky": {
+        "light": "#FF4AA8FF",
+        "dark": "#FF2F86D9"
+      },
+      "lilac": {
+        "light": "#FFA97BFF",
+        "dark": "#FF8659DE"
+      },
+      "rose": {
+        "light": "#FFFF6F91",
+        "dark": "#FFDE4E71"
+      },
+      "lemon": {
+        "light": "#FFFFC93C",
+        "dark": "#FFD9A41C"
+      },
+      "sage": {
+        "light": "#FF7FC16B",
+        "dark": "#FF5E9E4C"
+      },
+      "coral": {
+        "light": "#FFFF7A59",
+        "dark": "#FFDE5A3A"
+      }
+    },
+    "fillStyle": "SOLID",
+    "cornerRadius": 10,
+    "inset": 1.5,
+    "shadow": {
+      "dx": 0,
+      "dy": 1.5,
+      "blur": 2,
+      "color": {
+        "light": "#26000000",
+        "dark": "#66000000"
+      }
+    },
+    "title": {
+      "font": "hand",
+      "size": 11,
+      "weight": 800,
+      "color": "auto"
+    },
+    "icon": "DOT"
+  },
+  "cancelled": {
+    "fill": {
+      "light": "#FFEDE7F0",
+      "dark": "#FF332A33"
+    },
+    "keepPaletteHue": true,
+    "pattern": "DOTS",
+    "patternColor": {
+      "light": "#33A08AB0",
+      "dark": "#40C6B3D1"
+    },
+    "patternSpacing": 4,
+    "textColor": {
+      "light": "#FFA08AB0",
+      "dark": "#FF9C88A9"
+    },
+    "badge": "ICON",
+    "border": {
+      "width": 1.5,
+      "color": {
+        "light": "#80A08AB0",
+        "dark": "#80C6B3D1"
+      },
+      "style": "DASHED"
+    }
+  },
+  "postIt": {
+    "papers": {
+      "yellow": {
+        "light": "#FFFFF06B",
+        "dark": "#FF6E6316"
+      },
+      "pink": {
+        "light": "#FFFFB8D2",
+        "dark": "#FF6E2B44"
+      },
+      "blue": {
+        "light": "#FFB3E0FF",
+        "dark": "#FF214766"
+      },
+      "green": {
+        "light": "#FFC2F0A8",
+        "dark": "#FF2F5720"
+      }
+    },
+    "rotation": {
+      "min": -5,
+      "max": 5
+    },
+    "cornerRadius": 3,
+    "attach": "PIN",
+    "foldCorner": {
+      "position": "BOTTOM_RIGHT",
+      "size": 8
+    },
+    "shadow": {
+      "dx": 1.5,
+      "dy": 3,
+      "blur": 4,
+      "color": {
+        "light": "#40000000",
+        "dark": "#80000000"
+      }
+    },
+    "font": {
+      "font": "hand",
+      "size": 11,
+      "weight": 800,
+      "color": {
+        "light": "#FF4A3554",
+        "dark": "#FFF7EAFF"
+      }
+    },
+    "time": {
+      "font": "hand",
+      "size": 9,
+      "weight": 600,
+      "color": {
+        "light": "#CC4A3554",
+        "dark": "#CCF7EAFF"
+      }
+    },
+    "tapeColor": {
+      "light": "#FFFF5C7A",
+      "dark": "#FFFF92A6"
+    },
+    "tapeAlpha": 1
+  },
+  "nowLine": {
+    "color": {
+      "light": "#FFFF5C7A",
+      "dark": "#FFFF92A6"
+    },
+    "width": 2,
+    "head": "TRIANGLE",
+    "glow": {
+      "dx": 0,
+      "dy": 0,
+      "blur": 4,
+      "color": {
+        "light": "#80FF5C7A",
+        "dark": "#80FF92A6"
+      }
+    }
+  },
+  "vacation": {
+    "headerBand": {
+      "height": 13,
+      "cornerRadius": 7,
+      "color": {
+        "light": "#403CC9A0",
+        "dark": "#553CC9A0"
+      },
+      "font": {
+        "size": 8,
+        "weight": 800,
+        "color": {
+          "light": "#FF1F7A60",
+          "dark": "#FFA8F0DA"
+        }
+      }
+    }
+  },
+  "sizeClass": {
+    "compact": {
+      "postIt": {
+        "rotation": {
+          "min": -2,
+          "max": 2
+        }
+      }
+    }
+  }
+}

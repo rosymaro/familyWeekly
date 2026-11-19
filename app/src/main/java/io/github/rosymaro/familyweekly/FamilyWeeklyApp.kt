@@ -3,6 +3,7 @@ package io.github.rosymaro.familyweekly
 import android.app.Application
 import io.github.rosymaro.familyweekly.data.AppStore
 import io.github.rosymaro.familyweekly.data.HolidayRepository
+import io.github.rosymaro.familyweekly.theme.ThemePresets
 
 /** 저장소를 하나씩 만들어 화면·위젯·알림에 나눠 준다 (DI 없음). */
 class FamilyWeeklyApp : Application() {
@@ -11,7 +12,12 @@ class FamilyWeeklyApp : Application() {
 
     val holidays: HolidayRepository by lazy {
         HolidayRepository {
-            runCatching { assets.open(HolidayRepository.ASSET_PATH).bufferedReader().use { it.readText() } }.getOrNull()
+            readAsset(HolidayRepository.ASSET_PATH)
         }
     }
+
+    val presets: ThemePresets by lazy { ThemePresets(::readAsset) }
+
+    private fun readAsset(path: String): String? =
+        runCatching { assets.open(path).bufferedReader().use { it.readText() } }.getOrNull()
 }
