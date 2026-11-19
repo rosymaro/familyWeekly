@@ -45,7 +45,8 @@ enum class DarkMode { SYSTEM, LIGHT, DARK }
 data class Settings(
     val darkMode: DarkMode = DarkMode.SYSTEM,
     val use24Hour: Boolean = true,
-    val alarmsEnabled: Boolean = true,
+    /** 앱 전체 알림. 처음 설치하면 꺼져 있고, 설정에서 켠다 (켤 때 알림 권한을 물어봄). */
+    val alarmsEnabled: Boolean = false,
     /** 방해 금지 시간대. null이면 없음. */
     val quietHours: QuietHours? = null,
     /** 앱 전체 기본 알림 규칙 (스케줄·블록에 없을 때). */

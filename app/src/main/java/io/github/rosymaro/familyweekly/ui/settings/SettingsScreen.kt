@@ -71,26 +71,28 @@ import java.util.Locale
 
 class SettingsViewModel(app: FamilyWeeklyApp) : StoreViewModel(app) {
 
-    private val _permissions = MutableStateFlow(app.alarms.permissions())
+    private val _permissions = MutableStateFlow(runCatching { app.alarms.permissions() }.getOrDefault(AlarmPermissions(true, true, true)))
     val permissions: StateFlow<AlarmPermissions> = _permissions.asStateFlow()
     private val _next = MutableStateFlow<List<PlannedAlarm>>(emptyList())
     val next: StateFlow<List<PlannedAlarm>> = _next.asStateFlow()
 
     fun refresh() {
-        _permissions.value = app.alarms.permissions()
+        runCatching { _permissions.value = app.alarms.permissions() }
+        loadNext()
+    }
+
+    /** 앞으로 48시간 알림 목록. 계산이 실패해도 화면은 그대로 (빈 목록). */
+    private fun loadNext(delayMs: Long = 0) {
         app.appScope.launch {
-            val list = app.alarms.nextAlarms()
+            if (delayMs > 0) kotlinx.coroutines.delay(delayMs)
+            val list = runCatching { app.alarms.nextAlarms() }.getOrDefault(emptyList())
             withContext(Dispatchers.Main) { _next.value = list }
         }
     }
 
     fun edit(transform: (Settings) -> Settings) {
         update { it.copy(settings = transform(it.settings)) }
-        app.appScope.launch {
-            kotlinx.coroutines.delay(600) // 저장·재등록 뒤에 목록 새로
-            val list = app.alarms.nextAlarms()
-            withContext(Dispatchers.Main) { _next.value = list }
-        }
+        loadNext(delayMs = 600) // 저장·재등록 뒤에 목록 새로
     }
 
     /** 지금 바로 기본 규칙으로 알림 하나 (소리·진동·팝업 확인용). */

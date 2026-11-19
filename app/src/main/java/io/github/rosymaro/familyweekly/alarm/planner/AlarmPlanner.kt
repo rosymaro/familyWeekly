@@ -220,8 +220,11 @@ object AlarmText {
     }
 
     fun fill(template: String, who: String, what: String, minutes: Int, place: String?): String {
+        // 정규식은 쓰지 않는다 (안드로이드 정규식은 JVM보다 엄격해서 "{장소}" 같은 패턴에서 오류가 날 수 있음)
         var s = template
-        s = if (place.isNullOrBlank()) s.replace(Regex("\\s*\\(\\{장소}\\)"), "").replace("{장소}", "") else s.replace("{장소}", place)
+        s = if (place.isNullOrBlank()) {
+            s.replace(" ({장소})", "").replace("({장소})", "").replace("{장소}", "")
+        } else s.replace("{장소}", place)
         return s.replace("{아이}", who).replace("{일정}", what).replace("{N}", minutes.toString()).trim()
     }
 
