@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 임시 앱 아이콘 앞쪽: 주간 시간표 칸 위에 붙은 포스트잇 (Phase 8에서 디자이너 아이콘으로 교체) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 시간표 틀 -->
+    <path
+        android:pathData="M34,36 L74,36 L74,74 L34,74 Z M34,46 L74,46 M47,36 L47,74 M61,36 L61,74"
+        android:strokeWidth="3"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineJoin="round" />
+    <!-- 포스트잇 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M52,52 L70,49 L72,63 L57,66 L54,66 Z" />
+</vector>
