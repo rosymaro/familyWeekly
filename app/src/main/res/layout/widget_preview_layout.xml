@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ 위젯 고르기 목록 미리보기 (previewLayout) -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/widget_name"
+        android:scaleType="fitCenter"
+        android:src="@drawable/widget_preview" />
+</FrameLayout>

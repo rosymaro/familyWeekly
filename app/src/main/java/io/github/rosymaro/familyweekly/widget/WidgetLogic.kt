@@ -82,6 +82,22 @@ object WidgetLogic {
     /** 이 스케줄을 보여 주는 위젯 수 (홈 카드 표시). */
     fun countFor(data: AppData, scheduleId: String): Int = data.widgets.count { it.scheduleId == scheduleId }
 
+    /**
+     * 다시 그릴지 판단할 때 쓰는 "지금" 값: 오늘이 보이는 요일이고 시간선이 표시 범위 안이면 분,
+     * 아니면 -1 (밤처럼 시간선이 안 보일 때는 5분마다 다시 그리지 않아도 됨).
+     */
+    fun nowKey(week: io.github.rosymaro.familyweekly.domain.ResolvedWeek, now: java.time.LocalDateTime): Int {
+        if (week.days.none { it.date == now.toLocalDate() }) return -1
+        val m = io.github.rosymaro.familyweekly.domain.TimeStep.fromLocalTime(now.toLocalTime())
+        return if (m in week.displayStartMin..week.displayEndMin) m else -1
+    }
+
+    /**
+     * 위젯 그림 캐시 키: 같은 키면 그림이 같으므로 런처로 다시 보내지 않는다 (배터리·런처 부담).
+     * 데이터, 공휴일, 크기, 다크, 날짜(오늘 강조·새 주), 지금 시각(시간선이 보일 때만)을 넣는다.
+     */
+    fun renderKey(vararg parts: Any?): Int = parts.toList().hashCode()
+
     /** 현재 시간선 갱신 간격 */
     const val TICK_MINUTES = 5L
 

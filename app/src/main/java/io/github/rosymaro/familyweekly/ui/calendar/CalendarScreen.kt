@@ -292,6 +292,8 @@ private fun EventRow(e: SpecialEvent, data: AppData, colors: Map<String, Color>,
             Text(
                 "📌 ${e.title}  " + if (e.allDay) "하루 종일" else "${TimeStep.format(e.startMin)}~${TimeStep.format(e.endMin)}",
                 style = MaterialTheme.typography.titleSmall,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 e.scheduleIds.forEach { sid ->

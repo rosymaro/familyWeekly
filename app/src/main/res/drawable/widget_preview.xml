@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 위젯 고르는 목록에 보이는 미리보기 그림 (4×3, 기본 디자인 '따뜻한 종이' 느낌).
+     실제 위젯은 앱이 그린 그림이라 런처 목록에서는 이 정지 그림을 보여 준다. 디자이너 그림이 오면 교체 (DESIGN.md 6절 9번) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="250dp"
+    android:height="180dp"
+    android:viewportWidth="250"
+    android:viewportHeight="180">
+    <path android:fillColor="#FFFBF3E6" android:pathData="M18,0h214a18,18 0,0 1,18 18v144a18,18 0,0 1,-18 18h-214a18,18 0,0 1,-18 -18v-144a18,18 0,0 1,18 -18z" />
+    <!-- 머리말 (아이 이름 자리) -->
+    <path android:fillColor="#FF3B3127" android:pathData="M14,12h60v9h-60z" />
+    <path android:fillColor="#663B3127" android:pathData="M80,14h50v5h-50z" />
+    <!-- 요일 -->
+    <path android:fillColor="#993B3127" android:pathData="M40,30h22v5h-22zM84,30h22v5h-22zM172,30h22v5h-22zM216,30h20v5h-20z" />
+    <path android:fillColor="#FFF2A65A" android:pathData="M125,27.5h26a5,5 0,0 1,0 10h-26a5,5 0,0 1,0 -10z" />
+    <!-- 시간 선 -->
+    <path android:strokeColor="#1F3B3127" android:strokeWidth="1" android:pathData="M30,48h210M30,76h210M30,104h210M30,132h210M30,160h210" />
+    <path android:fillColor="#663B3127" android:pathData="M14,49h10v4h-10zM14,77h10v4h-10zM14,105h10v4h-10zM14,133h10v4h-10z" />
+    <!-- 오늘 열 -->
+    <path android:fillColor="#14F2A65A" android:pathData="M118,42h40v128h-40z" />
+    <!-- 일정 칸 -->
+    <path android:fillColor="#5AF2A65A" android:pathData="M33,50h38v26h-38z" />
+    <path android:fillColor="#5A6FA8DC" android:pathData="M33,90h38v26h-38z" />
+    <path android:fillColor="#5A6FC2A5" android:pathData="M77,50h38v34h-38z" />
+    <path android:fillColor="#5AE87A62" android:pathData="M121,50h34v28h-34z" />
+    <path android:fillColor="#5A9DB58A" android:pathData="M121,92h34v40h-34z" />
+    <path android:fillColor="#FFE4DED6" android:pathData="M165,50h38v26h-38z" />
+    <path android:strokeColor="#40776655" android:strokeWidth="1" android:pathData="M167,74l14,-22M177,74l14,-22M187,74l14,-22" />
+    <path android:fillColor="#5AE88AA0" android:pathData="M209,62h28v30h-28z" />
+    <!-- 현재 시간선 -->
+    <path android:strokeColor="#FFE5533D" android:strokeWidth="2" android:pathData="M118,86h40" />
+    <path android:fillColor="#FFE5533D" android:pathData="M114,86a4,4 0,1 0,8 0a4,4 0,1 0,-8 0" />
+    <!-- 포스트잇 -->
+    <group android:pivotX="98" android:pivotY="112" android:rotation="-3">
+        <path android:fillColor="#FFFFC7D9" android:pathData="M78,98h34v22l-6,6h-28z" />
+        <path android:fillColor="#FFE5A9BD" android:pathData="M112,120h-6v6z" />
+        <path android:fillColor="#8CFFFFFF" android:pathData="M88,95h14v6h-14z" />
+        <path android:strokeColor="#FF3B3127" android:strokeWidth="2" android:pathData="M83,108h20M83,114h12" />
+    </group>
+    <group android:pivotX="186" android:pivotY="66" android:rotation="2">
+        <path android:fillColor="#FFFFE98A" android:pathData="M170,56h32v22h-32z" />
+        <path android:strokeColor="#FF3B3127" android:strokeWidth="2" android:pathData="M175,65h20M175,71h12" />
+    </group>
+</vector>

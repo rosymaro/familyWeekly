@@ -1,6 +1,10 @@
 package io.github.rosymaro.familyweekly.ui.week
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.clickable
+import io.github.rosymaro.familyweekly.domain.WeekDescription
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -117,6 +121,8 @@ fun WeekScreen(
     var showSettings by remember { mutableStateOf(false) }
     var postItMenu by remember { mutableStateOf<SpecialEvent?>(null) }
     var showDetached by remember { mutableStateOf(false) }
+    /** 그림 대신 목록으로 (TalkBack·정확한 편집용) */
+    var listMode by rememberSaveable { mutableStateOf(false) }
     val detached = remember(data, vm.scheduleId, week, holidays) {
         OccurrenceResolver.resolve(data, vm.scheduleId, week, holidays)?.detachedEvents.orEmpty()
     }
@@ -124,10 +130,13 @@ fun WeekScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(schedule?.let { listOfNotNull(it.emoji, it.name).joinToString(" ") } ?: "") },
+                title = { Text(schedule?.let { listOfNotNull(it.emoji, it.name).joinToString(" ") } ?: "", maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "뒤로") } },
                 actions = {
-                    if (schedule != null) IconButton(onClick = { showSettings = true }) { Icon(Icons.Default.Settings, contentDescription = "스케줄 설정") }
+                    if (schedule != null) {
+                        TextButton(onClick = { listMode = !listMode }) { Text(if (listMode) "시간표로 보기" else "목록으로 보기") }
+                        IconButton(onClick = { showSettings = true }) { Icon(Icons.Default.Settings, contentDescription = "스케줄 설정") }
+                    }
                 },
             )
         },
@@ -146,7 +155,27 @@ fun WeekScreen(
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
-            WeekEditor(
+            if (schedule.blocks.isEmpty()) {
+                Text(
+                    if (listMode) "요일 옆 '+ 일정'으로 첫 반복 일정을 넣어 보세요." else "빈 칸을 길게 누르면 그 시각에 새 일정을 넣을 수 있어요. (목록으로 보기에서도 추가할 수 있어요)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
+                        .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(8.dp)).padding(10.dp),
+                )
+            }
+            if (listMode) {
+                WeekList(
+                    data = data,
+                    scheduleId = schedule.id,
+                    week = week,
+                    holidays = holidays,
+                    now = now,
+                    onEditBlock = { editing = it },
+                    onEventTap = { postItMenu = it },
+                    onAdd = { d -> editing = newBlockState(d, 15 * 60) },
+                )
+            } else WeekEditor(
                 data = data,
                 scheduleId = schedule.id,
                 week = week,
@@ -326,7 +355,10 @@ private fun WeekEditor(
                     Modifier
                         .fillMaxWidth()
                         .height(heightDp)
-                        .semantics { contentDescription = "${schedule.name} 주간 시간표. 일정을 누르면 수정, 길게 눌러 끌면 이동, 빈 칸을 길게 누르면 새 일정" }
+                        .semantics {
+                            contentDescription = WeekDescription.week(resolved) +
+                                " 일정을 누르면 수정, 길게 눌러 끌면 이동, 빈 칸을 길게 누르면 새 일정. 위쪽 '목록으로 보기'에서 하나씩 고를 수도 있어요."
+                        }
                         .pointerInput(Unit) {
                             detectTapGestures(
                                 onLongPress = { /* 길게 누르기는 아래 드래그 감지에서 */ },
@@ -453,13 +485,15 @@ private fun WeekEditor(
     }
 }
 
-private fun editStateFor(data: AppData, scheduleId: String, b: BlockLayout): BlockEditState {
+private fun editStateFor(data: AppData, scheduleId: String, b: BlockLayout): BlockEditState = editStateFor(data, scheduleId, b.occurrence)
+
+private fun editStateFor(data: AppData, scheduleId: String, occ: io.github.rosymaro.familyweekly.domain.Occurrence): BlockEditState {
     val schedule = data.schedule(scheduleId)!!
-    val block = schedule.blocks.firstOrNull { it.id == b.occurrence.block.id } ?: b.occurrence.block
+    val block = schedule.blocks.firstOrNull { it.id == occ.block.id } ?: occ.block
     val group = BlockOps.groupOf(schedule, block.id)
     return BlockEditState(
         blockId = block.id,
-        date = b.occurrence.date,
+        date = occ.date,
         draft = BlockDraft(
             title = block.title,
             days = group.map { it.day }.toSet().ifEmpty { setOf(block.day) },
@@ -471,7 +505,7 @@ private fun editStateFor(data: AppData, scheduleId: String, b: BlockLayout): Blo
             alarm = block.alarm,
         ).let { d -> if (group.size > 1) d else d.copy(days = setOf(block.day)) },
         groupSize = group.size,
-        cancelledThisWeek = BlockOps.isCancelled(schedule, block.id, b.occurrence.date),
+        cancelledThisWeek = BlockOps.isCancelled(schedule, block.id, occ.date),
     ).let { st ->
         // 시트에서 "이 요일만"으로 바꾸면 첫 요일이 이 블록 요일이 되도록 순서를 맞춤
         if (st.groupSize > 1) st.copy(draft = st.draft.copy(days = linkedSetOf(block.day) + st.draft.days)) else st
@@ -485,3 +519,69 @@ private fun newBlockState(day: java.time.DayOfWeek, startMin: Int) = BlockEditSt
     groupSize = 0,
     cancelledThisWeek = false,
 )
+
+/** 목록으로 보기: 요일마다 특이 일정·반복 일정을 줄로. 취소는 글로 이유까지 (색에만 기대지 않음). */
+@Composable
+private fun WeekList(
+    data: AppData,
+    scheduleId: String,
+    week: WeekRange,
+    holidays: HolidayCalendar,
+    now: LocalDateTime,
+    onEditBlock: (BlockEditState) -> Unit,
+    onEventTap: (SpecialEvent) -> Unit,
+    onAdd: (java.time.DayOfWeek) -> Unit,
+) {
+    val resolved = remember(data, scheduleId, week, holidays, now) { OccurrenceResolver.resolve(data, scheduleId, week, holidays, now) } ?: return
+    androidx.compose.foundation.lazy.LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp, 8.dp, 16.dp, 48.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        resolved.days.forEach { day ->
+            item(key = "d" + day.date) {
+                Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            day.date.format(DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREAN)) + if (day.isToday) " · 오늘" else "",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = if (day.holiday != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                        )
+                        val extra = listOfNotNull(day.holiday?.let { "🎌 ${it.name}" }) + day.vacations.map { "🏖 ${it.title}" }
+                        if (extra.isNotEmpty()) Text(extra.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    TextButton(onClick = { onAdd(day.date.dayOfWeek) }) { Text("+ 일정") }
+                }
+            }
+            val events = resolved.events.filter { it.event.date == day.date }
+            items(events.size, key = { "e" + events[it].event.id + day.date }) { i ->
+                val e = events[i]
+                androidx.compose.material3.Card(Modifier.fillMaxWidth().clickable { onEventTap(e.event) }) {
+                    Text(WeekDescription.event(e).replaceFirst("특이 일정 ", "📌 "), modifier = Modifier.padding(12.dp), maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                }
+            }
+            val occs = resolved.occurrences.filter { it.date == day.date }
+            items(occs.size, key = { "o" + occs[it].block.id + day.date }) { i ->
+                val o = occs[i]
+                val cancelled = o.status == io.github.rosymaro.familyweekly.domain.OccurrenceStatus.CANCELLED
+                androidx.compose.material3.OutlinedCard(Modifier.fillMaxWidth().clickable { onEditBlock(editStateFor(data, scheduleId, o)) }) {
+                    Column(Modifier.padding(12.dp)) {
+                        Text(
+                            "${TimeStep.format(o.startMin)}~${TimeStep.format(o.endMin)}  ${o.block.title}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            textDecoration = if (cancelled) androidx.compose.ui.text.style.TextDecoration.LineThrough else null,
+                            color = if (cancelled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                        )
+                        val sub = listOfNotNull(o.block.place?.takeIf { it.isNotBlank() }, o.displayReason?.let { "취소 · " + WeekDescription.reasonLabel(it) })
+                        if (sub.isNotEmpty()) Text(sub.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = if (cancelled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+            if (events.isEmpty() && occs.isEmpty()) {
+                item(key = "n" + day.date) { Text("일정 없음", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            }
+        }
+    }
+}
