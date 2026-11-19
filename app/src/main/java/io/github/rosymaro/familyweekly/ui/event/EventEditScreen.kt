@@ -101,6 +101,23 @@ fun EventEditScreen(onDone: () -> Unit, vm: EventEditViewModel = viewModel(facto
             Text("붙일 스케줄 (여러 명 가능)", style = MaterialTheme.typography.labelLarge)
             ScheduleChips(data, e.scheduleIds) { ids -> vm.edit { it.copy(scheduleIds = ids) } }
 
+            if (!vm.isNew && e.scheduleIds.isNotEmpty()) {
+                Text("시간표에 포스트잇 보이기", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    "끄면 그 아이 시간표·위젯에서만 포스트잇을 떼요. 특이 일정은 캘린더에 남아요.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                e.scheduleIds.mapNotNull { data.schedule(it) }.forEach { s ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(s.name, modifier = Modifier.weight(1f))
+                        Switch(!e.isDetachedFrom(s.id), { on ->
+                            vm.edit { it.copy(detachedFrom = if (on) it.detachedFrom - s.id else it.detachedFrom + s.id) }
+                        })
+                    }
+                }
+            }
+
             if (overlaps.isNotEmpty()) {
                 Text("겹치는 기존 일정", style = MaterialTheme.typography.labelLarge)
                 Text(

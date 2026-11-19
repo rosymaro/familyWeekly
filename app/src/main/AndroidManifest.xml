@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 공휴일을 한국천문연구원 특일 정보 API에서 받으려면 필요 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".FamilyWeeklyApp"
         android:allowBackup="true"

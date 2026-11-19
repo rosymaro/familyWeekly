@@ -25,7 +25,8 @@ data class AppData(
     fun schedule(id: String): Schedule? = schedules.firstOrNull { it.id == id }
 
     companion object {
-        const val CURRENT_VERSION = 1
+        /** 1: 처음 / 2: SpecialEvent.detachedFrom(포스트잇 떼기) 추가 */
+        const val CURRENT_VERSION = 2
     }
 }
 
@@ -183,7 +184,14 @@ data class SpecialEvent(
     val paperKey: String = "yellow",
     /** null이면 Settings.eventDefaultAlarm. */
     val alarm: AlarmRule? = null,
+    /**
+     * 포스트잇을 뗀 스케줄. 그 아이 시간표(앱·위젯)에는 포스트잇이 안 보이지만
+     * 특이 일정은 캘린더에 그대로 남고, scheduleIds·유지/취소 선택도 그대로다 (다시 붙일 수 있음).
+     */
+    val detachedFrom: List<String> = emptyList(),
 ) {
+    fun isDetachedFrom(scheduleId: String): Boolean = scheduleId in detachedFrom
+
     fun overlapActionFor(scheduleId: String): OverlapAction =
         overlapActions[scheduleId] ?: OverlapAction.KEEP
 
