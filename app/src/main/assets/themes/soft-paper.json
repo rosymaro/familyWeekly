@@ -1,0 +1,51 @@
+{
+  "id": "soft-paper",
+  "name": "따뜻한 종이",
+  "fonts": { "display": "system", "body": "system", "hand": "system" },
+  "canvas": {
+    "background": { "light": "#FFFBF3E6", "dark": "#FF26211B" },
+    "cornerRadius": 20,
+    "padding": { "start": 10, "top": 10, "end": 10, "bottom": 10 }
+  },
+  "header": {
+    "title": { "font": "display", "size": 16, "weight": 700, "color": { "light": "#FF3B3127", "dark": "#FFEDE3D6" } },
+    "subtitle": { "format": "M월 d일 ~ M월 d일", "font": { "size": 11, "color": { "light": "#998A7B6B", "dark": "#99CDBFAF" } } }
+  },
+  "dayHeader": {
+    "labelFormat": "E d",
+    "font": { "size": 11, "weight": 600, "color": { "light": "#FF3B3127", "dark": "#FFEDE3D6" } },
+    "saturdayColor": { "light": "#FF3E6FB0", "dark": "#FF8FB4E6" },
+    "sundayColor": { "light": "#FFD0473A", "dark": "#FFF08A80" },
+    "holidayColor": { "light": "#FFD0473A", "dark": "#FFF08A80" }
+  },
+  "today": {
+    "headerStyle": "PILL",
+    "headerColor": { "light": "#FFF2A65A", "dark": "#FFB8742F" },
+    "headerTextColor": { "light": "#FFFFFFFF", "dark": "#FF1E1B16" },
+    "columnTint": { "light": "#14F2A65A", "dark": "#1FF2A65A" }
+  },
+  "grid": {
+    "hourLine": { "width": 1, "color": { "light": "#1F3B3127", "dark": "#24EDE3D6" }, "style": "SOLID" }
+  },
+  "block": {
+    "fillStyle": "TINT",
+    "tintAlpha": 0.35,
+    "cornerRadius": 6
+  },
+  "cancelled": {
+    "fill": { "light": "#FFE4DED6", "dark": "#FF3A342D" },
+    "pattern": "HATCH",
+    "strikeThrough": true,
+    "badge": "ICON"
+  },
+  "postIt": {
+    "attach": "TAPE",
+    "rotation": { "min": -3, "max": 3 },
+    "widthRatio": 0.82,
+    "shadow": { "dx": 1, "dy": 2, "blur": 3, "color": { "light": "#33000000", "dark": "#66000000" } }
+  },
+  "nowLine": {
+    "color": { "light": "#FFE5533D", "dark": "#FFFF7A66" },
+    "head": "DOT"
+  }
+}

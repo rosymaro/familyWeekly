@@ -1,0 +1,97 @@
+{
+  "id": "clean-grid",
+  "name": "깔끔한 표",
+  "fonts": { "display": "system", "body": "system", "hand": "system" },
+  "canvas": {
+    "background": { "light": "#FFFFFFFF", "dark": "#FF121212" },
+    "cornerRadius": 16,
+    "border": { "width": 1, "color": { "light": "#FFE3E3E3", "dark": "#FF2C2C2C" } }
+  },
+  "header": {
+    "title": { "size": 15, "weight": 700, "color": { "light": "#FF111111", "dark": "#FFF2F2F2" } },
+    "subtitle": { "format": "M/d ~ M/d", "font": { "size": 10, "color": { "light": "#FF8A8A8A", "dark": "#FF8F8F8F" } } }
+  },
+  "dayHeader": {
+    "labelFormat": "E",
+    "font": { "size": 10, "weight": 700, "color": { "light": "#FF555555", "dark": "#FFBDBDBD" } },
+    "saturdayColor": { "light": "#FF2F6FDE", "dark": "#FF82AAF2" },
+    "sundayColor": { "light": "#FFE0362C", "dark": "#FFFF8A80" },
+    "holidayColor": { "light": "#FFE0362C", "dark": "#FFFF8A80" },
+    "holidayNameFont": { "size": 7, "color": { "light": "#FFE0362C", "dark": "#FFFF8A80" } },
+    "holidayMark": "UNDERLINE"
+  },
+  "today": {
+    "headerStyle": "UNDERLINE",
+    "headerColor": { "light": "#FF111111", "dark": "#FFF2F2F2" },
+    "headerTextColor": { "light": "#FF111111", "dark": "#FFF2F2F2" },
+    "columnTint": { "light": "#0A000000", "dark": "#14FFFFFF" }
+  },
+  "timeAxis": {
+    "font": { "size": 8, "color": { "light": "#FF9E9E9E", "dark": "#FF7A7A7A" } },
+    "labelFormat": "HH:mm",
+    "width": 28
+  },
+  "grid": {
+    "hourLine": { "width": 0.5, "color": { "light": "#FFE6E6E6", "dark": "#FF2A2A2A" } },
+    "columnDivider": { "visible": true, "width": 0.5, "color": { "light": "#FFF0F0F0", "dark": "#FF242424" } },
+    "weekendColumnTint": { "light": "#08000000", "dark": "#0AFFFFFF" },
+    "holidayColumnTint": { "light": "#0AE0362C", "dark": "#14FF8A80" },
+    "columnGap": 1
+  },
+  "block": {
+    "palette": {
+      "default": { "light": "#FF9E9E9E", "dark": "#FF757575" },
+      "peach": { "light": "#FFFF8A3D", "dark": "#FFFFA066" },
+      "mint": { "light": "#FF1FB386", "dark": "#FF4FD1A8" },
+      "sky": { "light": "#FF2F80ED", "dark": "#FF6FA8F5" },
+      "lilac": { "light": "#FF8E6CEF", "dark": "#FFAE95F5" },
+      "rose": { "light": "#FFEB5A7E", "dark": "#FFF28AA4" },
+      "lemon": { "light": "#FFE8B400", "dark": "#FFF2CC4D" },
+      "sage": { "light": "#FF6E9C55", "dark": "#FF94C27C" },
+      "coral": { "light": "#FFF2643D", "dark": "#FFF5896A" }
+    },
+    "fillStyle": "LEFT_BAR",
+    "tintAlpha": 0.14,
+    "cornerRadius": 3,
+    "title": { "size": 9, "weight": 600, "color": "auto" },
+    "time": { "size": 8, "color": "auto" },
+    "timeFormat": "H:mm–H:mm"
+  },
+  "cancelled": {
+    "fill": { "light": "#FFF5F5F5", "dark": "#FF1E1E1E" },
+    "keepPaletteHue": false,
+    "pattern": "NONE",
+    "strikeThrough": true,
+    "textColor": { "light": "#FFB0B0B0", "dark": "#FF6E6E6E" },
+    "badge": "TEXT",
+    "badgeFont": { "size": 7, "weight": 700, "color": { "light": "#FFE0362C", "dark": "#FFFF8A80" } },
+    "border": { "width": 1, "color": { "light": "#FFD6D6D6", "dark": "#FF3A3A3A" }, "style": "DASHED" }
+  },
+  "postIt": {
+    "papers": {
+      "yellow": { "light": "#FFFFF1A8", "dark": "#FF5C531F" },
+      "pink": { "light": "#FFFFD6E2", "dark": "#FF5C2E3C" },
+      "blue": { "light": "#FFD6EBFF", "dark": "#FF27405A" },
+      "green": { "light": "#FFDDF3D3", "dark": "#FF2C4724" }
+    },
+    "rotation": { "min": 0, "max": 0 },
+    "cornerRadius": 2,
+    "attach": "NONE",
+    "foldCorner": { "position": "NONE", "size": 0 },
+    "shadow": { "dx": 0, "dy": 1, "blur": 1.5, "color": { "light": "#26000000", "dark": "#59000000" } },
+    "font": { "font": "body", "size": 9, "weight": 700, "color": { "light": "#FF222222", "dark": "#FFF0F0F0" } },
+    "time": { "font": "body", "size": 8, "color": { "light": "#CC222222", "dark": "#CCF0F0F0" } },
+    "offset": { "x": 0, "y": 0 }
+  },
+  "nowLine": {
+    "color": { "light": "#FFE0362C", "dark": "#FFFF6B5E" },
+    "width": 1,
+    "head": "PILL_TIME",
+    "span": "ALL_COLUMNS"
+  },
+  "vacation": {
+    "headerBand": { "color": { "light": "#1A2F80ED", "dark": "#332F80ED" }, "font": { "size": 7, "weight": 600, "color": { "light": "#FF2F6FDE", "dark": "#FF82AAF2" } } },
+    "columnTint": { "light": "#082F80ED", "dark": "#0F2F80ED" }
+  },
+  "emptyState": { "font": { "size": 10, "color": { "light": "#FF9E9E9E", "dark": "#FF757575" } } }
+}
