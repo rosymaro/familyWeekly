@@ -3,6 +3,8 @@ package io.github.rosymaro.familyweekly.theme
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
@@ -44,7 +46,12 @@ data class ThemeColor(val light: String, val dark: String? = null) {
 }
 
 object ThemeColorSerializer : KSerializer<ThemeColor> {
-    override val descriptor: SerialDescriptor = JsonObject.serializer().descriptor
+    /** 디자인 편집기(TokenSchema)가 색 토큰을 알아보도록 이름이 있는 설명자 */
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor(SERIAL_NAME) {
+        element<String>("light")
+        element<String?>("dark", isOptional = true)
+    }
+    const val SERIAL_NAME = "familyweekly.ThemeColor"
 
     override fun serialize(encoder: Encoder, value: ThemeColor) {
         val json = encoder as JsonEncoder

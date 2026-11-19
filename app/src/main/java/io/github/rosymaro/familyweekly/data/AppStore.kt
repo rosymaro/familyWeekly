@@ -140,6 +140,8 @@ object Migrations {
                 1 -> current
                 // 2 → 3: Settings.allDayAlarmMin이 생김 (없으면 기본값 7:30)
                 2 -> current
+                // 3 → 4: 디자인 편집기용 themes / themeOverride (없으면 비어 있음)
+                3 -> current
                 else -> error("알 수 없는 저장 형식 버전: $v")
             }
             v++

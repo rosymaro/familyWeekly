@@ -16,13 +16,13 @@ import io.github.rosymaro.familyweekly.layout.RenderSpec
 import io.github.rosymaro.familyweekly.layout.WeekLayout
 import io.github.rosymaro.familyweekly.render.WeekPainter
 import io.github.rosymaro.familyweekly.theme.SizeClass
-import io.github.rosymaro.familyweekly.theme.ThemePresets
+import io.github.rosymaro.familyweekly.theme.ThemeLibrary
+import io.github.rosymaro.familyweekly.domain.AppData
+import io.github.rosymaro.familyweekly.domain.WidgetBinding
+import kotlinx.serialization.json.JsonObject
 import io.github.rosymaro.familyweekly.theme.ThemeResolver
 import java.time.LocalDateTime
 
-/** 스케줄 테마 + 크기 단계 + 다크로 최종 테마. */
-fun resolveScheduleTheme(presets: ThemePresets, themeId: String?, sizeClass: SizeClass, dark: Boolean, vararg extra: kotlinx.serialization.json.JsonObject?) =
-    ThemeResolver.resolve(listOf(presets.get(themeId)) + extra.toList(), sizeClass, dark)
 
 /**
  * 위젯과 같은 렌더러로 그린 주간 그림 (홈 카드 미리보기 등). 탭 처리 없음.
@@ -31,21 +31,27 @@ fun resolveScheduleTheme(presets: ThemePresets, themeId: String?, sizeClass: Siz
 @Composable
 fun WeekPreviewImage(
     week: ResolvedWeek,
-    presets: ThemePresets,
+    library: ThemeLibrary,
+    data: AppData,
     dark: Boolean,
     now: LocalDateTime,
     height: Dp,
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
+    /** 위젯 미리보기면 그 위젯 설정 (위젯 디자인·덮어쓰기) */
+    binding: WidgetBinding? = null,
+    /** 디자인 편집기처럼 레이어를 직접 줄 때 */
+    layers: List<JsonObject?>? = null,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth().height(height)) {
         val density = LocalDensity.current.density
         val fontScale = LocalConfiguration.current.fontScale
         val wDp = maxWidth.value
         val hDp = height.value
-        val bitmap = remember(week, dark, now, wDp, hDp, density, fontScale, week.schedule.themeId) {
+        val bitmap = remember(week, dark, now, wDp, hDp, density, fontScale, data.themes, binding, layers) {
             val sizeClass = SizeClass.of(wDp, hDp)
-            val rt = resolveScheduleTheme(presets, week.schedule.themeId, sizeClass, dark)
+            val rt = if (layers != null) ThemeResolver.resolve(layers, sizeClass, dark)
+            else library.resolve(data, week.schedule, sizeClass, dark, binding)
             val spec = RenderSpec((wDp * density).toInt().coerceAtLeast(1), (hDp * density).toInt().coerceAtLeast(1), density, fontScale)
             val layout = WeekLayout.compute(week, rt.theme, spec, now, sizeClass)
             WeekPainter().render(layout, rt).asImageBitmap()

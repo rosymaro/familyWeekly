@@ -20,6 +20,7 @@ import java.util.UUID
 class EventEditViewModel(app: FamilyWeeklyApp, handle: SavedStateHandle) : StoreViewModel(app) {
     private val route = handle.toRoute<EventEditRoute>()
     val presets = app.presets
+    val themes = app.themes
     private val existing = route.eventId?.let { id -> data.value.specialEvents.firstOrNull { it.id == id } }
     val isNew = existing == null
 

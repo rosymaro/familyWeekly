@@ -9,9 +9,25 @@ object HomeRoute
 @Serializable
 data class WeekRoute(val scheduleId: String)
 
-/** 개발용 디자인 미리보기 (Phase 7 편집기로 바뀜). */
+/** 디자인 목록 (프리셋·내 디자인·아이별·위젯별). */
 @Serializable
-object DesignPreviewRoute
+object DesignLibraryRoute
+
+/** 디자인 편집기. kind = theme(id=디자인 id) / schedule(id=스케줄 id) / widget(id=위젯 id) */
+@Serializable
+data class DesignEditRoute(val kind: String, val id: String) {
+    companion object {
+        const val THEME = "theme"
+        const val SCHEDULE = "schedule"
+        const val WIDGET = "widget"
+
+        fun of(t: io.github.rosymaro.familyweekly.theme.DesignTarget) = when (t) {
+            is io.github.rosymaro.familyweekly.theme.DesignTarget.Theme -> DesignEditRoute(THEME, t.themeId)
+            is io.github.rosymaro.familyweekly.theme.DesignTarget.ScheduleOnly -> DesignEditRoute(SCHEDULE, t.scheduleId)
+            is io.github.rosymaro.familyweekly.theme.DesignTarget.WidgetOnly -> DesignEditRoute(WIDGET, t.appWidgetId.toString())
+        }
+    }
+}
 
 /** 월 달력: 특이 일정·휴가·공휴일. */
 @Serializable

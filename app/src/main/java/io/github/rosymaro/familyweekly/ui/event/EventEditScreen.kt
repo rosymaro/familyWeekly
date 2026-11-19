@@ -59,8 +59,8 @@ fun EventEditScreen(onDone: () -> Unit, vm: EventEditViewModel = viewModel(facto
     val data by vm.data.collectAsStateWithLifecycle()
     val e by vm.draft.collectAsStateWithLifecycle()
     val dark = ThemeResolver.isDark(data.settings.darkMode, isSystemInDarkTheme())
-    val papers = remember(dark) {
-        ThemeResolver.resolve(listOf(vm.presets.get(null)), SizeClass.MEDIUM, dark).let { rt -> rt.theme.postIt.papers.mapValues { rt.color(it.value) } }
+    val papers = remember(dark, data.themes, e.scheduleIds) {
+        vm.themes.resolve(data, data.schedule(e.scheduleIds.firstOrNull() ?: ""), SizeClass.MEDIUM, dark).let { rt -> rt.theme.postIt.papers.mapValues { rt.color(it.value) } }
     }
     val overlaps = remember(data, e) { OccurrenceResolver.overlappingBlocks(data, e) }
     val problem = EventOps.canSave(data, e)

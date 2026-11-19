@@ -71,7 +71,8 @@ private sealed interface HomeDialog {
 @Composable
 fun HomeScreen(
     onOpenSchedule: (String) -> Unit,
-    onOpenDesignPreview: () -> Unit,
+    onOpenDesign: () -> Unit,
+    onCustomizeSchedule: (String) -> Unit,
     onOpenCalendar: () -> Unit,
     onOpenSettings: () -> Unit,
     vm: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
@@ -102,7 +103,7 @@ fun HomeScreen(
                     DropdownMenu(menu, { menu = false }) {
                         DropdownMenuItem(text = { Text("캘린더") }, onClick = { menu = false; onOpenCalendar() })
                         DropdownMenuItem(text = { Text("설정") }, onClick = { menu = false; onOpenSettings() })
-                        DropdownMenuItem(text = { Text("디자인 미리보기 (개발용)") }, onClick = { menu = false; onOpenDesignPreview() })
+                        DropdownMenuItem(text = { Text("디자인") }, onClick = { menu = false; onOpenDesign() })
                     }
                 },
             )
@@ -139,7 +140,7 @@ fun HomeScreen(
                     summary = week?.let { TodaySummary.of(it, now).text() } ?: "",
                     preview = {
                         week?.let {
-                            WeekPreviewImage(it, vm.presets, dark, now, height = 170.dp, contentDescription = "${schedule.name} 이번 주 미리보기")
+                            WeekPreviewImage(it, vm.themes, data, dark, now, height = 170.dp, contentDescription = "${schedule.name} 이번 주 미리보기")
                         }
                     },
                     isFirst = index == 0,
@@ -184,9 +185,10 @@ fun HomeScreen(
         }
         is HomeDialog.Theme -> data.schedule(d.id)?.let { s ->
             ThemePickerDialog(
-                options = ThemePresets.IDS.map { it to vm.presets.name(it) },
+                options = vm.themes.entries(data).map { it.id to it.name },
                 current = s.themeId ?: ThemePresets.DEFAULT_ID,
                 onDismiss = { dialog = null },
+                onCustomize = { dialog = null; onCustomizeSchedule(s.id) },
             ) { vm.setTheme(s.id, it); dialog = null }
         }
     }

@@ -87,7 +87,7 @@ fun CalendarScreen(
     val dark = ThemeResolver.isDark(data.settings.darkMode, isSystemInDarkTheme())
     val holidayUpdates by vm.holidayUpdates.collectAsStateWithLifecycle()
     val holidays = remember(data.customHolidays, holidayUpdates) { vm.holidays() }
-    val colors = remember(data.schedules, dark) { scheduleColors(vm.presets, data, dark) }
+    val colors = remember(data.schedules, dark) { scheduleColors(vm.themes, data, dark) }
     val weeks = remember(month, data, holidays, today) { CalendarMonth.weeks(month, data, holidays, today) }
 
     Scaffold(

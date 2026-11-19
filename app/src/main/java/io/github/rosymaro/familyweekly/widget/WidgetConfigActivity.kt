@@ -21,6 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -42,7 +43,6 @@ import io.github.rosymaro.familyweekly.domain.DarkMode
 import io.github.rosymaro.familyweekly.domain.OccurrenceResolver
 import io.github.rosymaro.familyweekly.domain.WeekRange
 import io.github.rosymaro.familyweekly.domain.WidgetBinding
-import io.github.rosymaro.familyweekly.theme.ThemePresets
 import io.github.rosymaro.familyweekly.theme.ThemeResolver
 import io.github.rosymaro.familyweekly.ui.common.WeekPreviewImage
 import io.github.rosymaro.familyweekly.ui.theme.FamilyWeeklyTheme
@@ -76,6 +76,15 @@ class WidgetConfigActivity : ComponentActivity() {
                     app = app,
                     existing = WidgetLogic.binding(data, appWidgetId),
                     onDone = ::finishWith,
+                    onCustomize = { binding ->
+                        // 저장하고 위젯을 추가한 뒤, 앱의 디자인 편집기를 "이 위젯만"으로 연다
+                        finishWith(binding)
+                        startActivity(
+                            Intent(this, MainActivity::class.java)
+                                .putExtra(MainActivity.EXTRA_EDIT_WIDGET, appWidgetId)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+                        )
+                    },
                     onCancel = ::finish,
                     onOpenApp = {
                         startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -88,8 +97,9 @@ class WidgetConfigActivity : ComponentActivity() {
 
     private fun finishWith(binding: WidgetBinding) {
         val app = application as FamilyWeeklyApp
+        // 파일이 작아서 바로 저장 (바로 이어서 여는 디자인 편집기가 이 위젯 설정을 찾을 수 있게)
+        runCatching { app.store.update { WidgetLogic.bind(it, binding) } }
         app.appScope.launch {
-            app.store.update { WidgetLogic.bind(it, binding) }
             app.widgets.update(appWidgetId)
             app.widgets.scheduleTicks()
         }
@@ -103,6 +113,7 @@ class WidgetConfigActivity : ComponentActivity() {
         app: FamilyWeeklyApp,
         existing: WidgetBinding?,
         onDone: (WidgetBinding) -> Unit,
+        onCustomize: (WidgetBinding) -> Unit,
         onCancel: () -> Unit,
         onOpenApp: () -> Unit,
     ) {
@@ -144,18 +155,20 @@ class WidgetConfigActivity : ComponentActivity() {
                 }
 
                 Text("디자인", style = MaterialTheme.typography.labelLarge)
-                val scheduleTheme = data.schedule(scheduleId ?: "")?.themeId ?: ThemePresets.DEFAULT_ID
+                val scheduleTheme = data.schedule(scheduleId ?: "")?.themeId
                 Row(Modifier.fillMaxWidth().selectable(selected = themeId == null, onClick = { themeId = null }), verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(selected = themeId == null, onClick = { themeId = null })
-                    Text("스케줄 디자인 그대로 (${app.presets.name(scheduleTheme)})")
+                    Text("스케줄 디자인 그대로 (${app.themes.name(data, scheduleTheme)})")
                 }
-                ThemePresets.IDS.forEach { id ->
-                    Row(Modifier.fillMaxWidth().selectable(selected = themeId == id, onClick = { themeId = id }), verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = themeId == id, onClick = { themeId = id })
-                        Text("이 위젯만: ${app.presets.name(id)}")
+                app.themes.entries(data).forEach { entry ->
+                    Row(Modifier.fillMaxWidth().selectable(selected = themeId == entry.id, onClick = { themeId = entry.id }), verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(selected = themeId == entry.id, onClick = { themeId = entry.id })
+                        Text("이 위젯만: ${entry.name}")
                     }
                 }
-                Text("세부 꾸미기(색·글꼴·포스트잇 모양 등)는 다음 업데이트의 디자인 편집기에서 할 수 있어요.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (existing?.themeOverride != null) {
+                    Text("이 위젯만 따로 꾸민 부분이 있어요 (그 위에 얹혀요).", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                }
 
                 Text("다크 모드", style = MaterialTheme.typography.labelLarge)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -171,18 +184,22 @@ class WidgetConfigActivity : ComponentActivity() {
                         OccurrenceResolver.resolve(data, sid, WeekRange.of(now.toLocalDate()), app.holidays.calendar(data.customHolidays), now)
                     }
                     val dark = WidgetLogic.isDark(darkMode, isSystemInDarkTheme())
-                    // 미리보기는 위젯 테마로 그리도록 스케줄의 themeId를 바꿔 넘긴다
                     week?.let { w ->
-                        val shown = w.copy(schedule = w.schedule.copy(themeId = themeId ?: w.schedule.themeId))
-                        WeekPreviewImage(shown, app.presets, dark, now, height = 260.dp, contentDescription = "위젯 미리보기")
+                        val draft = WidgetBinding(appWidgetId, sid, themeId = themeId, darkMode = darkMode, themeOverride = existing?.themeOverride)
+                        WeekPreviewImage(w, app.themes, data, dark, now, height = 260.dp, contentDescription = "위젯 미리보기", binding = draft)
                     }
                 }
 
                 Button(
                     enabled = sid != null,
-                    onClick = { onDone(WidgetBinding(appWidgetId, sid, themeId = themeId, darkMode = darkMode)) },
+                    onClick = { onDone(WidgetBinding(appWidgetId, sid, themeId = themeId, darkMode = darkMode, themeOverride = existing?.themeOverride)) },
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text("완료") }
+                OutlinedButton(
+                    enabled = sid != null,
+                    onClick = { onCustomize(WidgetBinding(appWidgetId, sid, themeId = themeId, darkMode = darkMode, themeOverride = existing?.themeOverride)) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("완료하고 이 위젯만 꾸미기 (색·글꼴·포스트잇…)") }
             }
         }
     }
