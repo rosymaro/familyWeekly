@@ -74,6 +74,8 @@ data class ResolvedWeek(
     /** 표시할 시간 범위 [startMin, endMin). */
     val displayStartMin: Int,
     val displayEndMin: Int,
+    /** 이 스케줄에서 포스트잇을 뗀 그 주 특이 일정 (그리지 않음, "다시 붙이기" 목록용). 유지/취소 효과는 그대로. */
+    val detachedEvents: List<SpecialEvent> = emptyList(),
 )
 
 /**
@@ -114,7 +116,7 @@ object OccurrenceResolver {
 
         val shownDates = dates.toSet()
         val eventOccurrences = events
-            .filter { it.date in shownDates }
+            .filter { it.date in shownDates && !it.isDetachedFrom(scheduleId) }
             .map { ev ->
                 val overlapped = schedule.blocks
                     .filter { it.day == ev.date.dayOfWeek && it.isValidOn(ev.date) && ev.overlaps(it.startMin, it.endMin) }
@@ -129,7 +131,9 @@ object OccurrenceResolver {
             .sortedWith(compareBy({ it.event.date }, { !it.event.allDay }, { it.event.startMin }))
 
         val (start, end) = displayRange(schedule.timeRange, occurrences, eventOccurrences)
-        return ResolvedWeek(schedule, week, days, occurrences, eventOccurrences, start, end)
+        val detached = events.filter { it.date in shownDates && it.isDetachedFrom(scheduleId) }
+            .sortedWith(compareBy({ it.date }, { !it.allDay }, { it.startMin }))
+        return ResolvedWeek(schedule, week, days, occurrences, eventOccurrences, start, end, detached)
     }
 
     private fun resolveBlock(

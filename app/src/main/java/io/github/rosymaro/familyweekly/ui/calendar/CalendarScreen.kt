@@ -85,7 +85,8 @@ fun CalendarScreen(
     val selected = LocalDate.parse(selectedStr)
     val today = LocalDate.now()
     val dark = ThemeResolver.isDark(data.settings.darkMode, isSystemInDarkTheme())
-    val holidays = remember(data.customHolidays) { vm.holidays() }
+    val holidayUpdates by vm.holidayUpdates.collectAsStateWithLifecycle()
+    val holidays = remember(data.customHolidays, holidayUpdates) { vm.holidays() }
     val colors = remember(data.schedules, dark) { scheduleColors(vm.presets, data, dark) }
     val weeks = remember(month, data, holidays, today) { CalendarMonth.weeks(month, data, holidays, today) }
 
@@ -299,7 +300,7 @@ private fun EventRow(e: SpecialEvent, data: AppData, colors: Map<String, Color>,
                         OverlapAction.CANCEL -> " (기존 취소)"
                         OverlapAction.KEEP -> " (기존 유지)"
                         null -> ""
-                    }
+                    } + if (e.isDetachedFrom(sid)) " · 포스트잇 뗌" else ""
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.size(8.dp).background(colors[sid] ?: Color.Gray, CircleShape))
                         Text(" $name$action", style = MaterialTheme.typography.bodySmall)

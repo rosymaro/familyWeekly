@@ -23,6 +23,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -108,11 +110,17 @@ fun WeekScreen(
     val scope = rememberCoroutineScope()
     val now = rememberMinuteTicker()
     val dark = ThemeResolver.isDark(data.settings.darkMode, isSystemInDarkTheme())
-    val holidays = remember(data.customHolidays) { vm.holidays() }
+    val holidayUpdates by vm.holidayUpdates.collectAsStateWithLifecycle()
+    val holidays = remember(data.customHolidays, holidayUpdates) { vm.holidays() }
     val week = WeekRange.of(now.toLocalDate()).shift(offset)
 
     var editing by remember { mutableStateOf<BlockEditState?>(null) }
     var showSettings by remember { mutableStateOf(false) }
+    var postItMenu by remember { mutableStateOf<SpecialEvent?>(null) }
+    var showDetached by remember { mutableStateOf(false) }
+    val detached = remember(data, vm.scheduleId, week, holidays) {
+        OccurrenceResolver.resolve(data, vm.scheduleId, week, holidays)?.detachedEvents.orEmpty()
+    }
 
     Scaffold(
         topBar = {
@@ -132,6 +140,13 @@ fun WeekScreen(
         }
         Column(Modifier.fillMaxSize().padding(padding)) {
             WeekNavBar(week, isThisWeek = offset == 0L, onPrev = { vm.shiftWeek(-1) }, onNext = { vm.shiftWeek(1) }, onToday = vm::goToday)
+            if (detached.isNotEmpty()) {
+                AssistChip(
+                    onClick = { showDetached = true },
+                    label = { Text("뗀 포스트잇 ${detached.size}개 · 다시 붙이기") },
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+            }
             WeekEditor(
                 data = data,
                 scheduleId = schedule.id,
@@ -142,7 +157,7 @@ fun WeekScreen(
                 vm = vm,
                 onSwipeWeek = { vm.shiftWeek(it) },
                 onEditBlock = { editing = it },
-                onEventTap = { onOpenEvent(it.id) },
+                onEventTap = { postItMenu = it },
                 onMoved = { title, from, to ->
                     scope.launch {
                         val res = snackbar.showSnackbar(
@@ -176,6 +191,55 @@ fun WeekScreen(
                 if (id != null && date != null) vm.toggleCancellation(id, date)
                 editing = null
             },
+        )
+    }
+
+    // 포스트잇 탭: 수정 / 떼기
+    postItMenu?.let { ev ->
+        AlertDialog(
+            onDismissRequest = { postItMenu = null },
+            title = { Text("📌 ${ev.title}") },
+            text = {
+                Text(
+                    (if (ev.allDay) "하루 종일" else "${TimeStep.format(ev.startMin)}~${TimeStep.format(ev.endMin)}") +
+                        "\n\n떼면 이 시간표(위젯 포함)에서만 안 보여요. 특이 일정은 캘린더에 그대로 남고, 기존 일정 유지/취소도 그대로예요.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.setDetached(ev.id, true)
+                    postItMenu = null
+                    scope.launch {
+                        val res = snackbar.showSnackbar("'${ev.title}' 포스트잇을 뗐어요", actionLabel = "되돌리기", duration = SnackbarDuration.Short)
+                        if (res == SnackbarResult.ActionPerformed) vm.setDetached(ev.id, false)
+                    }
+                }) { Text("떼기") }
+            },
+            dismissButton = {
+                TextButton(onClick = { postItMenu = null; onOpenEvent(ev.id) }) { Text("수정") }
+            },
+        )
+    }
+
+    if (showDetached) {
+        AlertDialog(
+            onDismissRequest = { showDetached = false },
+            title = { Text("뗀 포스트잇") },
+            text = {
+                Column {
+                    if (detached.isEmpty()) Text("이번 주에 뗀 포스트잇이 없어요")
+                    detached.forEach { ev ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "${ev.date.dayOfWeek.korean()} ${ev.title}" + if (ev.allDay) " (하루 종일)" else " ${TimeStep.format(ev.startMin)}",
+                                modifier = Modifier.weight(1f),
+                            )
+                            TextButton(onClick = { vm.setDetached(ev.id, false) }) { Text("다시 붙이기") }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { showDetached = false }) { Text("닫기") } },
         )
     }
 

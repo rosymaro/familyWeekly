@@ -77,7 +77,8 @@ fun HomeScreen(
     var dialog by remember { mutableStateOf<HomeDialog?>(null) }
     val now = rememberMinuteTicker()
     val dark = ThemeResolver.isDark(data.settings.darkMode, isSystemInDarkTheme())
-    val holidays = remember(data.customHolidays) { vm.holidays() }
+    val holidayUpdates by vm.holidayUpdates.collectAsStateWithLifecycle()
+    val holidays = remember(data.customHolidays, holidayUpdates) { vm.holidays() }
 
     Scaffold(
         topBar = {

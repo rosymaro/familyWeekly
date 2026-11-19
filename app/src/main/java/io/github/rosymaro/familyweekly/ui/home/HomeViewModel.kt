@@ -13,6 +13,9 @@ class HomeViewModel(app: FamilyWeeklyApp) : StoreViewModel(app) {
     val loadIssue = app.store.loadIssue
     val presets = app.presets
 
+    /** 공휴일을 새로 받으면 바뀜 → 화면이 다시 계산 */
+    val holidayUpdates = app.holidays.updates
+
     fun holidays() = app.holidays.calendar(data.value.customHolidays)
 
     fun clearLoadIssue() = app.store.clearLoadIssue()

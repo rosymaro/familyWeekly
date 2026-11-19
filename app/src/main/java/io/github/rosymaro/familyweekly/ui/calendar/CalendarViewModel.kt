@@ -17,6 +17,9 @@ class CalendarViewModel(app: FamilyWeeklyApp, private val handle: SavedStateHand
     val month: StateFlow<String> = handle.getStateFlow(KEY_MONTH, YearMonth.now().toString())
     val selected: StateFlow<String> = handle.getStateFlow(KEY_SELECTED, LocalDate.now().toString())
 
+    /** 공휴일을 새로 받으면 바뀜 → 화면이 다시 계산 */
+    val holidayUpdates = app.holidays.updates
+
     fun holidays() = app.holidays.calendar(data.value.customHolidays)
 
     fun shiftMonth(by: Long) {

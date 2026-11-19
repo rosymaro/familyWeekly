@@ -35,8 +35,19 @@ object EventOps {
             overlapActions = e.overlapActions.filterKeys { it in overlapping && it in e.scheduleIds },
             startMin = if (e.allDay) 0 else e.startMin,
             endMin = if (e.allDay) 0 else e.endMin,
+            detachedFrom = e.detachedFrom.distinct().filter { it in e.scheduleIds },
         )
     }
+
+    /**
+     * 포스트잇 떼기/다시 붙이기 (그 아이 시간표에서만). 특이 일정은 지우지 않고 캘린더에 남는다.
+     * 기존 일정 유지/취소 선택도 그대로 둔다 (뗀다고 취소된 수업이 되살아나지 않음).
+     */
+    fun setDetached(data: AppData, eventId: String, scheduleId: String, detached: Boolean): AppData =
+        data.copy(specialEvents = data.specialEvents.map { e ->
+            if (e.id != eventId || scheduleId !in e.scheduleIds) e
+            else e.copy(detachedFrom = if (detached) (e.detachedFrom + scheduleId).distinct() else e.detachedFrom - scheduleId)
+        })
 
     fun canSave(data: AppData, e: SpecialEvent): String? =
         validate(e) ?: if (missingChoices(data, e).isNotEmpty()) "겹치는 기존 일정을 유지할지 취소할지 골라 주세요" else null
