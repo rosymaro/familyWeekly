@@ -89,7 +89,7 @@ class DetachTest {
         assertTrue(store.data.value.specialEvents.single().detachedFrom.isEmpty())
         store.update { EventOps.setDetached(it, "e", "a", true) }
         val text = File(dir, AppStore.FILE_NAME).readText()
-        assertTrue(text.contains("\"version\": 2"))
+        assertTrue(text.contains("\"version\": ${AppData.CURRENT_VERSION}"))
         assertEquals(listOf("a"), AppStore(dir).data.value.specialEvents.single().detachedFrom)
     }
 }

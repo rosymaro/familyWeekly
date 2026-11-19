@@ -12,6 +12,8 @@ data class BlockDraft(
     val colorKey: String = "default",
     val place: String? = null,
     val memo: String? = null,
+    /** null이면 스케줄 기본 알림 */
+    val alarm: AlarmRule? = null,
 )
 
 /** 반복 블록 추가·수정·삭제·이동·개별 취소. 모두 순수 함수. */
@@ -60,6 +62,7 @@ object BlockOps {
             colorKey = draft.colorKey,
             place = draft.place?.trim()?.ifEmpty { null },
             memo = draft.memo?.trim()?.ifEmpty { null },
+            alarm = draft.alarm,
         )
 
         if (editingBlockId == null) {

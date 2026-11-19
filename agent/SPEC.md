@@ -256,7 +256,10 @@ app/src/test/                      # JVM 유닛 테스트
 | `FULL_SCREEN_ALARM` | `setAlarmClock` + 전체 화면 인텐트(`AlarmActivity`). Android 14+에서 `USE_FULL_SCREEN_INTENT`가 허용되지 않으면 HEADS_UP으로 대체하고 설정 화면에 안내 |
 
 - 알림 채널은 만든 뒤 소리·진동을 앱에서 바꿀 수 없으므로, **(style, sound kind, uri, vibration pattern) 조합의 해시를 채널 id**로 써서 필요한 채널을 만들고, 안 쓰는 채널은 정리한다. 이 규칙은 `NotificationChannels`에 한 곳에만 둔다.
-- 진동 `CUSTOM`과 `repeatUntilDismissed`는 채널 대신 `AlarmActivity`/수신기에서 `Vibrator`·`Ringtone`으로 직접 처리.
+- 진동 `CUSTOM`도 채널 진동 패턴으로 처리 (조합마다 채널). `repeatUntilDismissed`는 알림 `FLAG_INSISTENT`(끌 때까지 소리·진동 반복) + 전체 화면 `AlarmActivity`(끄기 / N분 뒤 다시).
+- 하루 종일 특이 일정은 `Settings.allDayAlarmMin`(기본 7:30)을 시작·끝 시각으로 보고 계산.
+- 특이 일정은 여러 아이에 붙어도 한 번만 울림 (알림이 켜진 아이가 하나라도 있으면). 포스트잇을 뗀 일정도 알림은 울림.
+- 울리기 직전에 지금 데이터로 한 번 더 확인 (해제가 늦어 취소된 수업 알림이 울리지 않게).
 
 ### 예약 방식
 
@@ -359,6 +362,6 @@ app/src/test/                      # JVM 유닛 테스트
 - [x] Phase 4
 - [x] 공휴일 공식 자료 받기, 포스트잇 떼기 (저장 형식 2)
 - [x] Phase 5
-- [ ] Phase 6
+- [x] Phase 6
 - [ ] Phase 7
 - [ ] Phase 8

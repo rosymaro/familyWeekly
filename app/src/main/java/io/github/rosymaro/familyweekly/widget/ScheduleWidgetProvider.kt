@@ -66,7 +66,7 @@ class ScheduleWidgetProvider : AppWidgetProvider() {
 }
 
 /**
- * 위젯 갱신이 필요한 일들: 5분 틱(현재 시간선·날짜 바뀜), 시간/시간대 변경, 부팅, 앱 업데이트,
+ * 시스템 일 → 위젯 다시 그리기·알림 다시 등록: 5분 틱(현재 시간선·날짜 바뀜), 시간/시간대 변경, 부팅, 앱 업데이트,
  * 앱에서 "홈 화면에 위젯 추가"로 고정한 위젯의 연결.
  */
 class WidgetEventsReceiver : BroadcastReceiver() {
@@ -84,14 +84,22 @@ class WidgetEventsReceiver : BroadcastReceiver() {
             Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED -> runAsync(context) { app ->
                 app.widgets.pruneBindings()
                 app.widgets.updateAll()
+                app.alarms.rescheduleAll() // 부팅하면 AlarmManager 등록이 모두 사라짐
             }
-            else -> runAsync(context) { app -> app.widgets.updateAll() } // TICK, TIME_SET, TIMEZONE_CHANGED
+            Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED -> runAsync(context) { app ->
+                app.widgets.updateAll()
+                app.alarms.rescheduleAll()
+            }
+            ACTION_EXACT_ALARM_PERMISSION -> runAsync(context) { app -> app.alarms.rescheduleAll() }
+            else -> runAsync(context) { app -> app.widgets.updateAll() } // 5분 틱
         }
     }
 
     companion object {
         const val ACTION_TICK = "io.github.rosymaro.familyweekly.WIDGET_TICK"
         const val ACTION_PINNED = "io.github.rosymaro.familyweekly.WIDGET_PINNED"
+        /** AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED (Android 12+) */
+        const val ACTION_EXACT_ALARM_PERMISSION = "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"
         const val EXTRA_SCHEDULE_ID = "scheduleId"
     }
 }

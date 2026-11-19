@@ -182,6 +182,7 @@ fun WeekScreen(
             state = st,
             availableDays = schedule?.days?.days.orEmpty(),
             palette = palette,
+            inheritedAlarm = schedule?.alarmDefaults ?: data.settings.defaultAlarm,
             onDismiss = { editing = null },
             onSave = { draft, applyToGroup -> vm.saveBlock(draft, st.blockId, applyToGroup); editing = null },
             onDelete = { whole -> st.blockId?.let { vm.deleteBlock(it, whole) }; editing = null },
@@ -244,7 +245,7 @@ fun WeekScreen(
     }
 
     if (showSettings && schedule != null) {
-        ScheduleSettingsDialog(schedule, { showSettings = false }) { updated ->
+        ScheduleSettingsDialog(schedule, data.settings.defaultAlarm, { showSettings = false }) { updated ->
             vm.updateSchedule { updated }
             showSettings = false
         }
@@ -468,6 +469,7 @@ private fun editStateFor(data: AppData, scheduleId: String, b: BlockLayout): Blo
             colorKey = block.colorKey,
             place = block.place,
             memo = block.memo,
+            alarm = block.alarm,
         ).let { d -> if (group.size > 1) d else d.copy(days = setOf(block.day)) },
         groupSize = group.size,
         cancelledThisWeek = BlockOps.isCancelled(schedule, block.id, b.occurrence.date),

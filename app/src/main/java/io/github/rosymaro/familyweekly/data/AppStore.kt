@@ -138,6 +138,8 @@ object Migrations {
             current = when (v) {
                 // 1 → 2: 특이 일정에 detachedFrom(포스트잇 뗀 스케줄)이 생김. 없으면 빈 목록이라 그대로 읽힌다
                 1 -> current
+                // 2 → 3: Settings.allDayAlarmMin이 생김 (없으면 기본값 7:30)
+                2 -> current
                 else -> error("알 수 없는 저장 형식 버전: $v")
             }
             v++

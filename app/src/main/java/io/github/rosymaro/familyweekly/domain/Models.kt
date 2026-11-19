@@ -25,8 +25,8 @@ data class AppData(
     fun schedule(id: String): Schedule? = schedules.firstOrNull { it.id == id }
 
     companion object {
-        /** 1: 처음 / 2: SpecialEvent.detachedFrom(포스트잇 떼기) 추가 */
-        const val CURRENT_VERSION = 2
+        /** 1: 처음 / 2: SpecialEvent.detachedFrom(포스트잇 떼기) / 3: Settings.allDayAlarmMin(하루 종일 일정 알림 기준 시각) */
+        const val CURRENT_VERSION = 3
     }
 }
 
@@ -46,7 +46,9 @@ data class Settings(
     val defaultAlarm: AlarmRule = AlarmRule(),
     /** 특이 일정 기본 알림 규칙. */
     val eventDefaultAlarm: AlarmRule = AlarmRule(),
-    /** 알림 문구 형식. {아이} {일정} {N} {장소} 치환. */
+    /** 하루 종일 특이 일정의 알림 기준 시각 (이 시각을 "시작"으로 보고 사전 알림을 계산). */
+    val allDayAlarmMin: Int = 7 * 60 + 30,
+    /** 알림 문구 형식 (사전·종료 전 알림). {아이} {일정} {N} {장소} 치환. 장소가 없으면 "({장소})" 부분이 빠짐. */
     val notificationFormat: String = "{아이} · {일정} {N}분 전 ({장소})",
 )
 

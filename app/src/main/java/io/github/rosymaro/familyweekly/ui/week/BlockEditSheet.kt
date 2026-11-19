@@ -29,12 +29,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.rosymaro.familyweekly.domain.AlarmRule
 import io.github.rosymaro.familyweekly.domain.BlockDraft
 import io.github.rosymaro.familyweekly.domain.BlockOps
 import io.github.rosymaro.familyweekly.domain.TimeStep
 import io.github.rosymaro.familyweekly.ui.common.ColorKeyChips
 import io.github.rosymaro.familyweekly.ui.common.DayChips
 import io.github.rosymaro.familyweekly.ui.common.TimeStepper
+import io.github.rosymaro.familyweekly.ui.settings.AlarmOverrideRow
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -56,6 +58,8 @@ fun BlockEditSheet(
     state: BlockEditState,
     availableDays: List<DayOfWeek>,
     palette: Map<String, Int>,
+    /** 이 블록에 따로 정하지 않으면 쓰는 알림 (스케줄 기본값 또는 앱 기본값) */
+    inheritedAlarm: AlarmRule,
     onDismiss: () -> Unit,
     onSave: (BlockDraft, applyToGroup: Boolean) -> Unit,
     onDelete: (wholeGroup: Boolean) -> Unit,
@@ -111,7 +115,13 @@ fun BlockEditSheet(
 
             OutlinedTextField(draft.place.orEmpty(), { draft = draft.copy(place = it) }, label = { Text("장소 (선택)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             OutlinedTextField(draft.memo.orEmpty(), { draft = draft.copy(memo = it) }, label = { Text("메모 (선택)") }, modifier = Modifier.fillMaxWidth())
-            Text("알림 설정은 다음 업데이트(Phase 6)에서 추가돼요.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            AlarmOverrideRow(
+                label = "이 일정만 알림 따로",
+                rule = draft.alarm,
+                inherited = inheritedAlarm,
+                inheritedLabel = "아이 기본 알림",
+                onChange = { draft = draft.copy(alarm = it) },
+            )
 
             if (!isNew && state.date != null) {
                 HorizontalDivider()

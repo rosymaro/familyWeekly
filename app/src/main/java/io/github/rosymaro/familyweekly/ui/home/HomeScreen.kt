@@ -54,6 +54,7 @@ import io.github.rosymaro.familyweekly.theme.ThemePresets
 import io.github.rosymaro.familyweekly.theme.ThemeResolver
 import io.github.rosymaro.familyweekly.ui.common.WeekPreviewImage
 import io.github.rosymaro.familyweekly.widget.WidgetLogic
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 
@@ -72,12 +73,19 @@ fun HomeScreen(
     onOpenSchedule: (String) -> Unit,
     onOpenDesignPreview: () -> Unit,
     onOpenCalendar: () -> Unit,
+    onOpenSettings: () -> Unit,
     vm: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
     val data by vm.data.collectAsStateWithLifecycle()
     val loadIssue by vm.loadIssue.collectAsStateWithLifecycle()
     var dialog by remember { mutableStateOf<HomeDialog?>(null) }
     var showWidgetHelp by remember { mutableStateOf(false) }
+    // 설정에서 돌아올 때마다 알림 권한 다시 확인
+    var notificationsAllowed by remember { mutableStateOf(true) }
+    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(lifecycle) {
+        lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.RESUMED) { notificationsAllowed = vm.notificationsAllowed() }
+    }
     val now = rememberMinuteTicker()
     val dark = ThemeResolver.isDark(data.settings.darkMode, isSystemInDarkTheme())
     val holidayUpdates by vm.holidayUpdates.collectAsStateWithLifecycle()
@@ -93,6 +101,7 @@ fun HomeScreen(
                     IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, contentDescription = "메뉴") }
                     DropdownMenu(menu, { menu = false }) {
                         DropdownMenuItem(text = { Text("캘린더") }, onClick = { menu = false; onOpenCalendar() })
+                        DropdownMenuItem(text = { Text("설정") }, onClick = { menu = false; onOpenSettings() })
                         DropdownMenuItem(text = { Text("디자인 미리보기 (개발용)") }, onClick = { menu = false; onOpenDesignPreview() })
                     }
                 },
@@ -108,6 +117,16 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             loadIssue?.let { issue -> item { LoadIssueCard(issue, vm::clearLoadIssue) } }
+            if (data.settings.alarmsEnabled && data.schedules.isNotEmpty() && !notificationsAllowed) {
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenSettings),
+                    ) {
+                        Text("알림이 허용되지 않아 일정 알림이 울리지 않아요. 눌러서 설정", modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onErrorContainer)
+                    }
+                }
+            }
             if (data.schedules.isEmpty()) {
                 item { EmptyHome(onAdd = { dialog = HomeDialog.Add }) }
             }
