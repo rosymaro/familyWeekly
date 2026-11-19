@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">familyWeekly</string>
     <string name="widget_name">주간 시간표</string>
-    <string name="widget_description">아이 한 명의 이번 주 시간표</string>
+    <string name="widget_description">아이 한 명의 이번 주 시간표 · 특이 일정은 포스트잇으로</string>
 </resources>

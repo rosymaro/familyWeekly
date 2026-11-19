@@ -4,6 +4,8 @@
     android:configure="io.github.rosymaro.familyweekly.widget.WidgetConfigActivity"
     android:description="@string/widget_description"
     android:initialLayout="@layout/widget_schedule"
+    android:previewImage="@drawable/widget_preview"
+    android:previewLayout="@layout/widget_preview_layout"
     android:minWidth="250dp"
     android:minHeight="180dp"
     android:minResizeWidth="180dp"

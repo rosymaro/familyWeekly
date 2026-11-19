@@ -100,7 +100,7 @@ fun ColorKeyChips(colors: Map<String, Int>, selected: String, onSelect: (String)
             val isSel = key == selected
             Box(
                 Modifier
-                    .size(32.dp)
+                    .size(44.dp) // 손가락으로 누르기 쉬운 크기
                     .background(Color(argb), CircleShape)
                     .border(if (isSel) 3.dp else 1.dp, if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, CircleShape)
                     .clickable { onSelect(key) }

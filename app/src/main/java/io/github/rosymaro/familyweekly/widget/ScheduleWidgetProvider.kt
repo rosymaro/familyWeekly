@@ -28,14 +28,14 @@ class ScheduleWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         runAsync(context) { app ->
-            appWidgetIds.forEach(app.widgets::update)
+            appWidgetIds.forEach { app.widgets.update(it, force = true) }
             app.widgets.scheduleTicks()
         }
     }
 
     /** 크기를 바꾸면 그 크기(작게/보통/크게)에 맞춰 다시 그림 */
     override fun onAppWidgetOptionsChanged(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int, newOptions: Bundle) {
-        runAsync(context) { app -> app.widgets.update(appWidgetId) }
+        runAsync(context) { app -> app.widgets.update(appWidgetId, force = true) }
     }
 
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {

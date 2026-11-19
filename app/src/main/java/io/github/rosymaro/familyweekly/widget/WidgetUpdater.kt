@@ -15,7 +15,7 @@ import io.github.rosymaro.familyweekly.MainActivity
 import io.github.rosymaro.familyweekly.R
 import io.github.rosymaro.familyweekly.domain.DarkMode
 import io.github.rosymaro.familyweekly.domain.OccurrenceResolver
-import io.github.rosymaro.familyweekly.domain.TodaySummary
+import io.github.rosymaro.familyweekly.domain.WeekDescription
 import io.github.rosymaro.familyweekly.domain.WeekRange
 import io.github.rosymaro.familyweekly.layout.WeekLayout
 import io.github.rosymaro.familyweekly.render.WeekPainter
@@ -31,32 +31,40 @@ class WidgetUpdater(private val app: FamilyWeeklyApp) {
     private val manager: AppWidgetManager get() = AppWidgetManager.getInstance(app)
     private val painter = WeekPainter()
 
+    /** 위젯마다 마지막으로 보낸 그림의 키 (같으면 다시 그리지 않음). 앱 프로세스가 살아 있는 동안만. */
+    private val lastKeys = mutableMapOf<Int, Int>()
+
     fun allIds(): IntArray = manager.getAppWidgetIds(ComponentName(app, ScheduleWidgetProvider::class.java))
 
     @Synchronized
     fun updateAll() {
         val ids = allIds()
-        ids.forEach(::update)
+        ids.forEach { update(it) }
         if (ids.isEmpty()) cancelTicks() else scheduleTicks()
     }
 
+    /** [force]면 키가 같아도 다시 그림 (런처가 위젯을 새로 만들었을 때 등). */
     @Synchronized
-    fun update(appWidgetId: Int) {
+    fun update(appWidgetId: Int, force: Boolean = false) {
         try {
-            val views = render(appWidgetId, densityFactor = 1f)
+            val (key, views) = render(appWidgetId, densityFactor = 1f, skipKey = if (force) null else lastKeys[appWidgetId])
+            if (views == null) return // 바뀐 게 없음
             try {
                 manager.updateAppWidget(appWidgetId, views)
             } catch (e: RuntimeException) {
                 // 런처로 보내는 그림이 너무 크면 (기기마다 한도가 다름) 해상도를 낮춰 한 번 더
                 Log.w(TAG, "widget $appWidgetId too large, retrying smaller", e)
-                manager.updateAppWidget(appWidgetId, render(appWidgetId, densityFactor = 0.6f))
+                manager.updateAppWidget(appWidgetId, render(appWidgetId, densityFactor = 0.6f, skipKey = null).second!!)
             }
+            lastKeys[appWidgetId] = key
         } catch (e: Exception) {
+            lastKeys.remove(appWidgetId)
             Log.e(TAG, "widget $appWidgetId render failed", e)
         }
     }
 
-    private fun render(appWidgetId: Int, densityFactor: Float): RemoteViews {
+    /** (키, 그림). 키가 [skipKey]와 같으면 그림은 null (그리지 않음). */
+    private fun render(appWidgetId: Int, densityFactor: Float, skipKey: Int?): Pair<Int, RemoteViews?> {
         val data = app.store.data.value
         val binding = WidgetLogic.binding(data, appWidgetId)
         val schedule = binding?.scheduleId?.let { data.schedule(it) }
@@ -87,23 +95,30 @@ class WidgetUpdater(private val app: FamilyWeeklyApp) {
         val dark = WidgetLogic.isDark(binding?.darkMode ?: DarkMode.SYSTEM, systemDark)
         val rt = app.themes.resolve(data, schedule, spec.sizeClass, dark, binding)
 
+        val now = LocalDateTime.now()
+        val holidays = app.holidays.calendar(data.customHolidays)
+        val week = schedule?.let { OccurrenceResolver.resolve(data, it.id, WeekRange.of(now.toLocalDate()), holidays, now) }
+        val key = WidgetLogic.renderKey(
+            data, app.holidays.updates.value, binding, spec, dark, now.toLocalDate(),
+            week?.let { WidgetLogic.nowKey(it, now) },
+        )
+        if (key == skipKey) return key to null
+
         val views = RemoteViews(app.packageName, R.layout.widget_schedule)
-        if (schedule == null) {
+        if (schedule == null || week == null) {
             val text = if (data.schedules.isEmpty()) "앱에서 스케줄을 먼저 만들어 주세요" else "연결된 스케줄이 없어요\n눌러서 선택"
             views.setImageViewBitmap(R.id.widget_image, painter.renderMessage(spec, rt, text))
             views.setContentDescription(R.id.widget_image, text.replace("\n", " "))
             views.setOnClickPendingIntent(R.id.widget_root, configIntent(appWidgetId))
-            return views
+            return key to views
         }
 
-        val now = LocalDateTime.now()
-        val holidays = app.holidays.calendar(data.customHolidays)
-        val week = OccurrenceResolver.resolve(data, schedule.id, WeekRange.of(now.toLocalDate()), holidays, now)!!
         val layout = WeekLayout.compute(week, rt.theme, spec, now, spec.sizeClass)
         views.setImageViewBitmap(R.id.widget_image, painter.render(layout, rt))
-        views.setContentDescription(R.id.widget_image, "${schedule.name} 이번 주 시간표. ${TodaySummary.of(week, now).text()}")
+        // TalkBack: 오늘 일정과 취소·포스트잇 상태를 글로
+        views.setContentDescription(R.id.widget_image, WeekDescription.widget(week, now.toLocalDate()))
         views.setOnClickPendingIntent(R.id.widget_root, openScheduleIntent(appWidgetId, schedule.id))
-        return views
+        return key to views
     }
 
     private fun openScheduleIntent(appWidgetId: Int, scheduleId: String): PendingIntent {
