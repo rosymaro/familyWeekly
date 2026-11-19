@@ -339,7 +339,7 @@ app/src/test/                      # JVM 유닛 테스트
 
 ## 8. 진행 상황
 
-- [ ] Phase 0
+- [x] Phase 0
 - [ ] Phase 1
 - [ ] Phase 2
 - [ ] Phase 3
