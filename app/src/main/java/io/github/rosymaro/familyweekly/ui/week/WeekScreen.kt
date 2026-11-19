@@ -6,7 +6,6 @@ import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -24,7 +23,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -100,6 +98,7 @@ private data class DragState(val origin: BlockLayout, val dx: Float, val dy: Flo
 @Composable
 fun WeekScreen(
     onBack: () -> Unit,
+    onOpenEvent: (eventId: String) -> Unit,
     vm: WeekViewModel = viewModel(factory = WeekViewModel.Factory),
 ) {
     val data by vm.data.collectAsStateWithLifecycle()
@@ -114,7 +113,6 @@ fun WeekScreen(
 
     var editing by remember { mutableStateOf<BlockEditState?>(null) }
     var showSettings by remember { mutableStateOf(false) }
-    var eventInfo by remember { mutableStateOf<SpecialEvent?>(null) }
 
     Scaffold(
         topBar = {
@@ -144,7 +142,7 @@ fun WeekScreen(
                 vm = vm,
                 onSwipeWeek = { vm.shiftWeek(it) },
                 onEditBlock = { editing = it },
-                onEventTap = { eventInfo = it },
+                onEventTap = { onOpenEvent(it.id) },
                 onMoved = { title, from, to ->
                     scope.launch {
                         val res = snackbar.showSnackbar(
@@ -188,21 +186,6 @@ fun WeekScreen(
         }
     }
 
-    eventInfo?.let { ev ->
-        AlertDialog(
-            onDismissRequest = { eventInfo = null },
-            title = { Text(ev.title) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(ev.date.format(DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREAN)) +
-                        if (ev.allDay) " 하루 종일" else " ${TimeStep.format(ev.startMin)}~${TimeStep.format(ev.endMin)}")
-                    ev.memo?.let { Text(it) }
-                    Text("특이 일정 수정은 캘린더 화면(다음 업데이트)에서 할 수 있어요.", style = MaterialTheme.typography.bodySmall)
-                }
-            },
-            confirmButton = { TextButton(onClick = { eventInfo = null }) { Text("닫기") } },
-        )
-    }
 }
 
 @Composable

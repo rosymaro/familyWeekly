@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -68,6 +69,7 @@ private sealed interface HomeDialog {
 fun HomeScreen(
     onOpenSchedule: (String) -> Unit,
     onOpenDesignPreview: () -> Unit,
+    onOpenCalendar: () -> Unit,
     vm: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
     val data by vm.data.collectAsStateWithLifecycle()
@@ -82,9 +84,11 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text("familyWeekly") },
                 actions = {
+                    IconButton(onClick = onOpenCalendar) { Icon(Icons.Default.DateRange, contentDescription = "캘린더 (특이 일정·휴가·공휴일)") }
                     var menu by remember { mutableStateOf(false) }
                     IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, contentDescription = "메뉴") }
                     DropdownMenu(menu, { menu = false }) {
+                        DropdownMenuItem(text = { Text("캘린더") }, onClick = { menu = false; onOpenCalendar() })
                         DropdownMenuItem(text = { Text("디자인 미리보기 (개발용)") }, onClick = { menu = false; onOpenDesignPreview() })
                     }
                 },
